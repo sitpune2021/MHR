@@ -135,37 +135,6 @@ class _CalculationSheetState extends State<CalculationSheet> {
     );
   }
 
-  // Widget _buildStyledDropdown(String hint, List<String> options,
-  //     String? selectedValue, Function(String?) onChanged) {
-  //   return Padding(
-  //     padding: const EdgeInsets.only(bottom: 8),
-  //     child: DropdownButtonFormField<String>(
-  //       decoration: InputDecoration(
-  //         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-  //         focusedBorder: OutlineInputBorder(
-  //           borderRadius: BorderRadius.circular(12),
-  //           borderSide: const BorderSide(color: Colors.blue, width: 2),
-  //         ),
-  //         contentPadding:
-  //             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-  //       ),
-  //       items: options
-  //           .map((option) => DropdownMenuItem(
-  //                 value: option,
-  //                 child: Text(option,
-  //                     style: const TextStyle(
-  //                         fontSize: 16, fontWeight: FontWeight.w500)),
-  //               ))
-  //           .toList(),
-  //       onChanged: onChanged,
-  //       validator: (value) => value == null ? 'Please select an option' : null,
-  //       hint: Text(hint, style: const TextStyle(fontSize: 16)),
-  //       dropdownColor: Colors.white,
-  //       menuMaxHeight: 300, // Set the max height of the dropdown list
-  //     ),
-  //   );
-  // }
-
   Widget _buildStyledDropdown(String hint, List<String> options,
       String? selectedValue, Function(String?) onChanged) {
     return Padding(
@@ -183,7 +152,7 @@ class _CalculationSheetState extends State<CalculationSheet> {
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           suffixIcon: selectedValue != null
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.red),
+                  icon: const Icon(Icons.close, color: Colors.red),
                   onPressed: () {
                     setState(() => onChanged(null));
                   },
