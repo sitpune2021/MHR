@@ -44,6 +44,8 @@
 //   }
 // }
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:machine_hour_rate/core/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -118,5 +120,72 @@ class AuthProvider extends ChangeNotifier {
     } else {
       return response["message"];
     }
+  }
+
+  // List<Map<String, dynamic>> _machineCategories = [];
+
+  // List<Map<String, dynamic>> get machineCategories => _machineCategories;
+
+  // Future<void> loadMachineCategories() async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final storedData = prefs.getString('machine_categories');
+
+  //     if (storedData != null) {
+  //       _machineCategories = List<Map<String, dynamic>>.from(
+  //         (jsonDecode(storedData) as List),
+  //       );
+  //     } else {
+  //       _machineCategories = await _authService.fetchMachineCategories();
+  //       await prefs.setString(
+  //           'machine_categories', jsonEncode(_machineCategories));
+  //     }
+
+  //     notifyListeners();
+  //   } catch (e) {
+  //     print("Error loading machine categories: $e");
+  //   }
+  // }
+
+  // List<Map<String, dynamic>> _machineCategories = [];
+
+  // List<Map<String, dynamic>> get machineCategories => _machineCategories;
+
+  // Future<void> loadMachineCategories() async {
+  //   try {
+  //     // Fetch categories from SharedPreferences
+  //     _machineCategories = await _authService.getStoredMachineCategories();
+
+  //     // If no stored data, fetch from API
+  //     if (_machineCategories.isEmpty) {
+  //       _machineCategories = await _authService.fetchMachineCategories();
+  //     }
+
+  //     notifyListeners();
+  //   } catch (e) {
+  //     print("Error loading categories: $e");
+  //   }
+  // }
+  List<Map<String, dynamic>> _categories = [];
+
+  List<Map<String, dynamic>> get categories => _categories;
+
+  Future<void> loadCategories() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final service = AuthService();
+      _categories = await service.fetchCategories();
+
+      // Store in SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString("categories", _categories.toString());
+    } catch (e) {
+      print("Error: $e");
+    }
+
+    _isLoading = false;
+    notifyListeners();
   }
 }

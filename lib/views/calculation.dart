@@ -1,7 +1,9 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:machine_hour_rate/core/theme/colors.dart';
+import 'package:machine_hour_rate/providers/auth_provider.dart';
 import 'package:machine_hour_rate/views/calculation/mhr_calculation.dart';
+import 'package:provider/provider.dart';
 
 class CalculationSheet extends StatefulWidget {
   const CalculationSheet({super.key});
@@ -20,6 +22,13 @@ class _CalculationSheetState extends State<CalculationSheet> {
   final TextEditingController _laborCostController = TextEditingController();
   final TextEditingController _maintenanceExpensesController =
       TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() =>
+        Provider.of<AuthProvider>(context, listen: false).loadCategories());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,34 +58,40 @@ class _CalculationSheetState extends State<CalculationSheet> {
                 _powerConsumptionController,
                 TextInputType.number,
                 (value) {
-                  if (value == null || value.isEmpty)
+                  if (value == null || value.isEmpty) {
                     return 'Power consumption is required';
-                  if (double.tryParse(value) == null)
+                  }
+                  if (double.tryParse(value) == null) {
                     return 'Enter a valid number';
+                  }
                   return null;
                 },
               ),
               _buildTextField(
-                'Labor Cost per Hour (\$)',
+                'Labor Cost (cost/hr)',
                 _laborCostController,
                 TextInputType.number,
                 (value) {
-                  if (value == null || value.isEmpty)
+                  if (value == null || value.isEmpty) {
                     return 'Labor cost is required';
-                  if (double.tryParse(value) == null)
+                  }
+                  if (double.tryParse(value) == null) {
                     return 'Enter a valid amount';
+                  }
                   return null;
                 },
               ),
               _buildTextField(
-                'Maintenance Cost (per cycle)',
+                'Maintenance Expenses (cost)',
                 _maintenanceExpensesController,
                 TextInputType.number,
                 (value) {
-                  if (value == null || value.isEmpty)
+                  if (value == null || value.isEmpty) {
                     return 'Maintenance cost is required';
-                  if (double.tryParse(value) == null)
+                  }
+                  if (double.tryParse(value) == null) {
                     return 'Enter a valid amount';
+                  }
                   return null;
                 },
               ),
@@ -117,12 +132,36 @@ class _CalculationSheetState extends State<CalculationSheet> {
     );
   }
 
+  // Widget _buildMachineDropdown() {
+  //   return _buildStyledDropdown(
+  //     'Select Machine Categorys',
+  //     ['Metalworking Machine', 'Woodworking Machine', 'Extile Machine'],
+  //     selectedMachineName,
+  //     (value) => setState(() => selectedMachineName = value),
+  //   );
+  // }
+
   Widget _buildMachineDropdown() {
-    return _buildStyledDropdown(
-      'Select Machine Categorys',
-      ['Metalworking Machine', 'Woodworking Machine', 'Extile Machine'],
-      selectedMachineName,
-      (value) => setState(() => selectedMachineName = value),
+    return Consumer<AuthProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading) {
+          return const CircularProgressIndicator(); // Show loading indicator
+        }
+
+        if (provider.categories.isEmpty) {
+          return const Text(
+              "No categories available"); // Show message if no data
+        }
+
+        return _buildStyledDropdown(
+          'Select Machine Categorys',
+          provider.categories
+              .map((category) => category["name"]! as String)
+              .toList(),
+          selectedMachineName,
+          (value) => setState(() => selectedMachineName = value),
+        );
+      },
     );
   }
 
