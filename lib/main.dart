@@ -27,7 +27,8 @@ class MyApp extends StatelessWidget {
         builder: (context, splashProvider, child) {
           return splashProvider.isSplashVisible
               ? const SplashScreen()
-              : const HomeScreen();
+              // : const HomeScreen();
+              : const SplashScreen();
         },
       ),
     );

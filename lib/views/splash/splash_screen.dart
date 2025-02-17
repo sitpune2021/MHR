@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:machine_hour_rate/views/home/home_screen.dart';
+import 'package:machine_hour_rate/views/login/register_screen.dart';
 import 'package:provider/provider.dart';
 
 class SplashProvider with ChangeNotifier {
@@ -47,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen>
       Provider.of<SplashProvider>(context, listen: false).hideSplash();
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const RegisterScreen()),
       );
     });
   }
@@ -79,21 +80,48 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                       const SizedBox(height: 20),
-                      const Text(
+                      Text(
                         'MACHINE HOUR RATE',
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 40,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          foreground: Paint()
+                            ..shader = const LinearGradient(
+                              // begin: Alignment.bottomCenter,
+                              // end: Alignment.topCenter,
+                              colors: [
+                                Color(0xFF207AC5),
+                                Color(0xFF9DC558),
+                                Color(0xFF44B264),
+                                // Blue
+                              ],
+                            ).createShader(
+                                const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)),
                         ),
                       ),
                       const SizedBox(height: 20),
                       const Text(
-                        ' Efficiently calculate Machine Hour Rates with Precision ',
+                        'Efficiently calculate',
                         style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.lightBlue,
+                          fontSize: 26,
+                          fontWeight: FontWeight.normal,
+                          // color: Colors.lightBlue,
+                        ),
+                      ),
+                      const Text(
+                        'Machine Hour Rates',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w500,
+                          // color: Colors.lightBlue,
+                        ),
+                      ),
+                      const Text(
+                        'with Precision',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.normal,
+                          // color: Colors.lightBlue,
                         ),
                       ),
                     ],

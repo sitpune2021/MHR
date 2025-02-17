@@ -9,22 +9,7 @@ class ForgotPassScreen extends StatefulWidget {
 }
 
 class _ForgotPassScreenState extends State<ForgotPassScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  // final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  void _resetPassword() async {
-    String email = _emailController.text.trim();
-    if (email.isEmpty) {
-      return;
-    }
-    try {
-      // await _auth.sendPasswordResetEmail(email: email);
-    } catch (e) {
-      if (kDebugMode) {
-        print(e.toString());
-      }
-    }
-  }
+  final TextEditingController _mobileController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +28,7 @@ class _ForgotPassScreenState extends State<ForgotPassScreen> {
               height: 20,
             ),
             TextField(
-              controller: _emailController,
+              controller: _mobileController,
               decoration: const InputDecoration(
                 labelText: 'Registered Email',
                 border: OutlineInputBorder(),
@@ -52,7 +37,7 @@ class _ForgotPassScreenState extends State<ForgotPassScreen> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _resetPassword,
+              onPressed: () {},
               child: const Text('Reset Password'),
             ),
           ],

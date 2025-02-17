@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,7 +14,6 @@ class AuthService {
     required String lastName,
     required String mobile,
     required String email,
-    required String password,
   }) async {
     try {
       final response = await http.post(
@@ -26,7 +24,6 @@ class AuthService {
           "last_name": lastName,
           "mobile": mobile,
           "email": email,
-          "password": password,
         }),
       );
       final responseData = jsonDecode(response.body);
