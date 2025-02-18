@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:machine_hour_rate/views/home/home_screen.dart';
 import 'package:machine_hour_rate/views/login/register_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -26,6 +25,7 @@ class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
+  bool hasInternet = true;
 
   @override
   void initState() {
