@@ -350,7 +350,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (errorMessage == null) {
-        showSuccessDialog(context);
+        showLoginDialog(context);
       } else if (errorMessage == "No internet connection. Please try again.") {
         showDialog(
           context: context,

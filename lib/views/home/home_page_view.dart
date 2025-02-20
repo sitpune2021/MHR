@@ -13,9 +13,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final bool isGuestUser = false;
-
   int _selectedIndex = 0;
+
   late List<Widget> _pages;
+  late List<String> _titles;
 
   @override
   void initState() {
@@ -24,6 +25,12 @@ class _HomePageState extends State<HomePage> {
       const HomeScreen(),
       const CalculationSheet(),
       SettingsPage(isGuestUser: isGuestUser),
+    ];
+
+    _titles = [
+      'Dashboard',
+      'New Calculation',
+      'Profile',
     ];
   }
 
@@ -36,6 +43,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: kBackgroundColor,
         shape: const RoundedRectangleBorder(
@@ -44,15 +52,28 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         automaticallyImplyLeading: false,
-        title: CircleAvatar(
-          backgroundColor: Colors.white,
-          radius: 28,
-          child: Image.asset(
-            'assets/logo.png',
-            width: 40,
-          ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.white,
+              radius: 28,
+              child: Image.asset(
+                'assets/logo.png',
+                width: 40,
+              ),
+            ),
+            const SizedBox(width: 100), // Space between logo and title
+            Text(
+              _titles[_selectedIndex], // Dynamic title
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
-        // centerTitle: true,
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: ClipRRect(
@@ -63,7 +84,7 @@ class _HomePageState extends State<HomePage> {
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           showUnselectedLabels: false,
-          showSelectedLabels: true, // This will show the label when selected
+          showSelectedLabels: true,
           backgroundColor: kBackgroundColor,
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,

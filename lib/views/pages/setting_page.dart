@@ -1,4 +1,3 @@
-// import 'package:flutter/foundation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:machine_hour_rate/views/login/login_screen.dart';
@@ -17,10 +16,8 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   String _appVersion = " ";
-
   final String _applink =
       "https://play.google.com/store/apps/details?id=com.example.myapp";
-
   bool isGuestUser = true;
 
   @override
@@ -38,9 +35,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<bool> getUserLoginStatus() async {
-    // Implement your logic to get the user login status here
-    // For example, return true if the user is logged in, otherwise false
-    return Future.value(false); // Replace with actual implementation
+    return Future.value(false);
   }
 
   Future<void> _loadAppVersion() async {
@@ -64,21 +59,48 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Log Out"),
-        content: const Text("Are you sure you want to log out?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _logout();
-            },
-            child: const Text("Log Out", style: TextStyle(color: Colors.red)),
-          ),
-        ],
+        backgroundColor: Colors.white,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            const Text(
+              "Are you sure\nyou want to log out?",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 15),
+            Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _logout();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text("Log Out"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Not Now",
+                      style: TextStyle(fontSize: 16, color: Colors.red)),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -95,22 +117,50 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Delete Account"),
-        content: const Text(
-            "Are you sure you want to delete your account? This action cannot be undone."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _deleteAccount();
-            },
-            child: const Text("Delete", style: TextStyle(color: Colors.red)),
-          ),
-        ],
+        backgroundColor: Colors.white,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            const Text(
+              "Are you sure you want to delete your account?\nThis action cannot be undone.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 15),
+            Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _deleteAccount();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text("Delete"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(fontSize: 16, color: Colors.blue),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -130,19 +180,13 @@ class _SettingsPageState extends State<SettingsPage> {
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: SingleChildScrollView(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
                   padding: const EdgeInsets.all(20.0),
-                  height: MediaQuery.sizeOf(context).height * 0.3,
                   width: MediaQuery.sizeOf(context).width * 0.8,
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
@@ -157,7 +201,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     ],
                   ),
                   child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       CircleAvatar(
                         radius: 50,
@@ -168,9 +213,9 @@ class _SettingsPageState extends State<SettingsPage> {
                           color: Colors.blue,
                         ),
                       ),
+                      SizedBox(height: 10),
                       Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             "User Name",
@@ -196,93 +241,67 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 const SizedBox(height: 40),
                 Container(
-                  padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
-                  height: MediaQuery.sizeOf(context).height * 0.4,
+                  padding: const EdgeInsets.only(top: 10.0),
                   width: MediaQuery.sizeOf(context).width * 0.9,
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.sizeOf(context).height * 0.5,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(10.0),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      InkWell(
-                        onTap: _shareApp,
-                        child: const ListTile(
-                          leading: Icon(Icons.share, color: Colors.blue),
-                          title: Text("Share the App",
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold)),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: _shareApp,
+                          child: const ListTile(
+                            leading: Icon(Icons.share, color: Colors.blue),
+                            title: Text("Share the App",
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                          ),
                         ),
-                      ),
-                      const Divider(thickness: 1, indent: 20, endIndent: 20),
-                      InkWell(
-                        onTap: _shareApp,
-                        child: const ListTile(
-                          leading: Icon(Icons.star, color: Colors.blue),
-                          title: Text("Rate the App",
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold)),
+                        const Divider(thickness: 1, indent: 20, endIndent: 20),
+                        InkWell(
+                          onTap: _shareApp,
+                          child: const ListTile(
+                            leading: Icon(Icons.star, color: Colors.blue),
+                            title: Text("Rate the App",
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                          ),
                         ),
-                      ),
-                      !widget.isGuestUser == false
-                          ? const Divider(
-                              thickness: 1,
-                              indent: 2,
-                              endIndent: 2,
-                            )
-                          : Container(),
-                      !widget.isGuestUser == false
-                          ? InkWell(
-                              onTap: _confirmLogout,
-                              child: const ListTile(
-                                leading: Icon(Icons.login, color: Colors.blue),
-                                title: Text("Log Out",
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold)),
-                              ),
-                            )
-                          : Container(),
-                      !widget.isGuestUser == false
-                          ? const Divider(
-                              thickness: 1,
-                              indent: 2,
-                              endIndent: 2,
-                            )
-                          : Container(),
-                      !widget.isGuestUser == false
-                          ? InkWell(
-                              onTap: _confirmDeleteAccount,
-                              child: const ListTile(
-                                leading: Icon(Icons.delete, color: Colors.blue),
-                                title: Text("Delete Account",
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold)),
-                              ),
-                            )
-                          : Container(),
-                      const Divider(thickness: 1, indent: 20, endIndent: 20),
-                      InkWell(
-                        onTap: _shareApp,
-                        child: ListTile(
+                        const Divider(thickness: 1, indent: 20, endIndent: 20),
+                        InkWell(
+                          onTap: _confirmLogout,
+                          child: const ListTile(
+                            leading: Icon(Icons.login, color: Colors.blue),
+                            title: Text("Log Out",
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        const Divider(thickness: 1, indent: 20, endIndent: 20),
+                        InkWell(
+                          onTap: _confirmDeleteAccount,
+                          child: const ListTile(
+                            leading: Icon(Icons.delete, color: Colors.blue),
+                            title: Text("Delete Account",
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        const Divider(thickness: 1, indent: 20, endIndent: 20),
+                        ListTile(
                           leading: const Icon(Icons.info, color: Colors.blue),
                           title: Text("App Version $_appVersion",
                               style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold)),
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],

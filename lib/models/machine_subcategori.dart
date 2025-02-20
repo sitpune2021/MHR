@@ -1,24 +1,24 @@
 import 'dart:convert';
 
-MachineSubCategoriModel machineSubCategoriModelFromJson(String str) =>
-    MachineSubCategoriModel.fromJson(json.decode(str));
+MachineSubCategoriesModel machineSubCategoriesModelFromJson(String str) =>
+    MachineSubCategoriesModel.fromJson(json.decode(str));
 
-String machineSubCategoriModelToJson(MachineSubCategoriModel data) =>
+String machineSubCategoriesModelToJson(MachineSubCategoriesModel data) =>
     json.encode(data.toJson());
 
-class MachineSubCategoriModel {
+class MachineSubCategoriesModel {
   String status;
   String message;
   List<Detail> details;
 
-  MachineSubCategoriModel({
+  MachineSubCategoriesModel({
     required this.status,
     required this.message,
     required this.details,
   });
 
-  factory MachineSubCategoriModel.fromJson(Map<String, dynamic> json) =>
-      MachineSubCategoriModel(
+  factory MachineSubCategoriesModel.fromJson(Map<String, dynamic> json) =>
+      MachineSubCategoriesModel(
         status: json["status"],
         message: json["message"],
         details:
@@ -36,14 +36,32 @@ class Detail {
   String id;
   String catId;
   String name;
-  String isdeleted;
+  dynamic machinePurchasePrice;
+  dynamic machineLife;
+  dynamic salvageValue;
+  dynamic powerCost;
+  dynamic operatorWage;
+  dynamic consumableCost;
+  dynamic factoryRent;
+  dynamic operatingHours;
+  dynamic workingDays;
+  String isActive;
   DateTime createdAt;
 
   Detail({
     required this.id,
     required this.catId,
     required this.name,
-    required this.isdeleted,
+    required this.machinePurchasePrice,
+    required this.machineLife,
+    required this.salvageValue,
+    required this.powerCost,
+    required this.operatorWage,
+    required this.consumableCost,
+    required this.factoryRent,
+    required this.operatingHours,
+    required this.workingDays,
+    required this.isActive,
     required this.createdAt,
   });
 
@@ -51,7 +69,16 @@ class Detail {
         id: json["id"],
         catId: json["cat_id"],
         name: json["name"],
-        isdeleted: json["isdeleted"],
+        machinePurchasePrice: json["machine_purchase_price"],
+        machineLife: json["machine_life"],
+        salvageValue: json["salvage_value"],
+        powerCost: json["power_cost"],
+        operatorWage: json["operator_wage"],
+        consumableCost: json["consumable_cost"],
+        factoryRent: json["factory_rent"],
+        operatingHours: json["operating_hours"],
+        workingDays: json["working_days"],
+        isActive: json["is_active"],
         createdAt: DateTime.parse(json["created_at"]),
       );
 
@@ -59,7 +86,16 @@ class Detail {
         "id": id,
         "cat_id": catId,
         "name": name,
-        "isdeleted": isdeleted,
+        "machine_purchase_price": machinePurchasePrice,
+        "machine_life": machineLife,
+        "salvage_value": salvageValue,
+        "power_cost": powerCost,
+        "operator_wage": operatorWage,
+        "consumable_cost": consumableCost,
+        "factory_rent": factoryRent,
+        "operating_hours": operatingHours,
+        "working_days": workingDays,
+        "is_active": isActive,
         "created_at": createdAt.toIso8601String(),
       };
 }

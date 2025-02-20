@@ -158,22 +158,8 @@ class AuthService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchCategories() async {
-    final response =
-        await http.get(Uri.parse("https://mhr.sitsolutions.co.in/categories"));
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-
-      if (data["status"] == "success") {
-        return (data["details"] as List)
-            .map((category) => {"id": category["id"], "name": category["name"]})
-            .toList();
-      } else {
-        throw Exception("Failed to fetch categories");
-      }
-    } else {
-      throw Exception("Failed to connect to the server");
-    }
+  Future<Map<String, dynamic>> getCurrency() async {
+    // Check internet connection
+    var connectivityResult = await Connectivity().checkConnectivity();
   }
 }
