@@ -54,10 +54,22 @@ class _CalculationSheetState extends State<CalculationSheet> {
                 ),
                 const SizedBox(height: 10),
                 _buildDropdown(), // Currency selection
+                _buildMachineTypeDropdown(), // Machine Type Dropdown
                 _buildMachineDropdown(), // Machine Name Dropdown
                 _buildMachineWaysCategoryDropdown(), // Machine Ways Categories Dropdown
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Machine Cost Factors',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
                 _buildTextField(
-                  'Power Consumption (kW)',
+                  'Machine Purchase Price (MP) (Rs)',
                   _powerConsumptionController,
                   TextInputType.number,
                   (value) {
@@ -71,7 +83,7 @@ class _CalculationSheetState extends State<CalculationSheet> {
                   },
                 ),
                 _buildTextField(
-                  'Labor Cost (cost/hr)',
+                  'Machine Life in Years (L) (Yrs)',
                   _laborCostController,
                   TextInputType.number,
                   (value) {
@@ -85,7 +97,141 @@ class _CalculationSheetState extends State<CalculationSheet> {
                   },
                 ),
                 _buildTextField(
-                  'Maintenance Expenses (cost)',
+                  'Salvage Value (S) (Rs)',
+                  _maintenanceExpensesController,
+                  TextInputType.number,
+                  (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Maintenance cost is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Operating Costs',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildTextField(
+                  'Power Consumption per Hour (PC) (Kw)',
+                  _maintenanceExpensesController,
+                  TextInputType.number,
+                  (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Maintenance cost is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                _buildTextField(
+                  'Power Cost per Unit (PU) (Rs)',
+                  _maintenanceExpensesController,
+                  TextInputType.number,
+                  (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Maintenance cost is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                _buildTextField(
+                  'Operator Wage per Hour (OW) (Rs)',
+                  _maintenanceExpensesController,
+                  TextInputType.number,
+                  (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Maintenance cost is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                _buildTextField(
+                  'Maintenance Cost per Year (MC) (Rs)',
+                  _maintenanceExpensesController,
+                  TextInputType.number,
+                  (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Maintenance cost is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                _buildTextField(
+                  'Consumables Cost per Year (CC) (Rs)',
+                  _maintenanceExpensesController,
+                  TextInputType.number,
+                  (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Maintenance cost is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                _buildTextField(
+                  'Factory Rent/Overheads per Year (RA) (Rs)',
+                  _maintenanceExpensesController,
+                  TextInputType.number,
+                  (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Maintenance cost is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Working Hours',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildTextField(
+                  'Operating Hours per Day (H) (Hr)',
+                  _maintenanceExpensesController,
+                  TextInputType.number,
+                  (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Maintenance cost is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                _buildTextField(
+                  'Working Days per Year (D) (Days))',
                   _maintenanceExpensesController,
                   TextInputType.number,
                   (value) {
@@ -136,14 +282,17 @@ class _CalculationSheetState extends State<CalculationSheet> {
     );
   }
 
-  // Widget _buildMachineDropdown() {
-  //   return _buildStyledDropdown(
-  //     'Select Machine Categorys',
-  //     ['Metalworking Machine', 'Woodworking Machine', 'Extile Machine'],
-  //     selectedMachineName,
-  //     (value) => setState(() => selectedMachineName = value),
-  //   );
-  // }
+  Widget _buildMachineTypeDropdown() {
+    return _buildStyledDropdown(
+      'Select Machine Type',
+      [
+        'Industry',
+        'Others',
+      ],
+      selectedMachineName,
+      (value) => setState(() => selectedMachineName = value),
+    );
+  }
 
   Widget _buildMachineDropdown() {
     return Consumer<AuthProvider>(
@@ -253,6 +402,10 @@ class _CalculationSheetState extends State<CalculationSheet> {
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.blue, width: 2.0),
+          ),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
