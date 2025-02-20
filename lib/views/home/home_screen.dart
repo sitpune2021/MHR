@@ -87,13 +87,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.only(
-          left: 10,
-          right: 10,
+          left: 20,
+          right: 20,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -119,6 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   return Card(
+                    color: Colors.grey[100],
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     elevation: 4,

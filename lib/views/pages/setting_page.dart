@@ -1,7 +1,6 @@
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:machine_hour_rate/core/theme/colors.dart';
 import 'package:machine_hour_rate/views/login/login_screen.dart';
 import 'package:machine_hour_rate/views/login/register_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -127,95 +126,165 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                ElevatedButton.icon(
-                  onPressed: _confirmLogout,
-                  icon: const Icon(Icons.logout, color: Colors.white),
-                  label: const Text("Log Out"),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0, vertical: 12.0),
-                    backgroundColor: kButtonColor,
-                    foregroundColor: Colors.black87,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                if (!widget.isGuestUser ==
-                    false) // Hide "Delete Account" if guest user
-                  ElevatedButton.icon(
-                    onPressed: _confirmDeleteAccount,
-                    icon: const Icon(Icons.delete, color: Colors.white),
-                    label: const Text("Delete Account"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                Container(
+                  padding: const EdgeInsets.all(20.0),
+                  height: MediaQuery.sizeOf(context).height * 0.3,
+                  width: MediaQuery.sizeOf(context).width * 0.8,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(10.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: const Offset(0, 3),
                       ),
-                    ),
+                    ],
                   ),
-                const SizedBox(height: 20),
-                const Text("MACHINE HOUR RATE",
-                    style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold)),
-                const Divider(thickness: 2, indent: 20, endIndent: 20),
-                Text.rich(
-                  TextSpan(
-                    text: "App Version: ",
-                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      TextSpan(
-                        text: _appVersion,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "User Name",
+                            style: TextStyle(
+                                fontSize: 20,
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            "Email: user@example.com",
+                            style: TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            "Mobile: +91 9876543210",
+                            style: TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: _shareApp,
-                  icon: const Icon(Icons.share, color: Colors.white),
-                  label: const Text("Share the App"),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10.0, vertical: 12.0),
-                    backgroundColor: kButtonColor,
-                    foregroundColor: Colors.black87,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
+                const SizedBox(height: 40),
+                Container(
+                  padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
+                  height: MediaQuery.sizeOf(context).height * 0.4,
+                  width: MediaQuery.sizeOf(context).width * 0.9,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      InkWell(
+                        onTap: _shareApp,
+                        child: const ListTile(
+                          leading: Icon(Icons.share, color: Colors.blue),
+                          title: Text("Share the App",
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const Divider(thickness: 1, indent: 20, endIndent: 20),
+                      InkWell(
+                        onTap: _shareApp,
+                        child: const ListTile(
+                          leading: Icon(Icons.star, color: Colors.blue),
+                          title: Text("Rate the App",
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      !widget.isGuestUser == false
+                          ? const Divider(
+                              thickness: 1,
+                              indent: 2,
+                              endIndent: 2,
+                            )
+                          : Container(),
+                      !widget.isGuestUser == false
+                          ? InkWell(
+                              onTap: _confirmLogout,
+                              child: const ListTile(
+                                leading: Icon(Icons.login, color: Colors.blue),
+                                title: Text("Log Out",
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                            )
+                          : Container(),
+                      !widget.isGuestUser == false
+                          ? const Divider(
+                              thickness: 1,
+                              indent: 2,
+                              endIndent: 2,
+                            )
+                          : Container(),
+                      !widget.isGuestUser == false
+                          ? InkWell(
+                              onTap: _confirmDeleteAccount,
+                              child: const ListTile(
+                                leading: Icon(Icons.delete, color: Colors.blue),
+                                title: Text("Delete Account",
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                            )
+                          : Container(),
+                      const Divider(thickness: 1, indent: 20, endIndent: 20),
+                      InkWell(
+                        onTap: _shareApp,
+                        child: ListTile(
+                          leading: const Icon(Icons.info, color: Colors.blue),
+                          title: Text("App Version $_appVersion",
+                              style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: _shareApp,
-                  icon: const Icon(Icons.star, color: Colors.white),
-                  label: const Text("Rate the App"),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12.0, vertical: 12.0),
-                    backgroundColor: kButtonColor,
-                    foregroundColor: Colors.black87,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
               ],
             ),
           ),

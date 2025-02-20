@@ -32,91 +32,95 @@ class _CalculationSheetState extends State<CalculationSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        top: 16,
-        left: 16,
-        right: 16,
-      ),
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'NEW CALCULATION',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              _buildDropdown(), // Currency selection
-              _buildMachineDropdown(), // Machine Name Dropdown
-              _buildMachineWaysCategoryDropdown(), // Machine Ways Categories Dropdown
-              _buildTextField(
-                'Power Consumption (kW)',
-                _powerConsumptionController,
-                TextInputType.number,
-                (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Power consumption is required';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Enter a valid number';
-                  }
-                  return null;
-                },
-              ),
-              _buildTextField(
-                'Labor Cost (cost/hr)',
-                _laborCostController,
-                TextInputType.number,
-                (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Labor cost is required';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Enter a valid amount';
-                  }
-                  return null;
-                },
-              ),
-              _buildTextField(
-                'Maintenance Expenses (cost)',
-                _maintenanceExpensesController,
-                TextInputType.number,
-                (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Maintenance cost is required';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Enter a valid amount';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kButtonColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+    // final authProvider = Provider.of<AuthProvider>(context);
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          top: 16,
+          left: 16,
+          right: 16,
+        ),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'NEW CALCULATION',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                _buildDropdown(), // Currency selection
+                _buildMachineDropdown(), // Machine Name Dropdown
+                _buildMachineWaysCategoryDropdown(), // Machine Ways Categories Dropdown
+                _buildTextField(
+                  'Power Consumption (kW)',
+                  _powerConsumptionController,
+                  TextInputType.number,
+                  (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Power consumption is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Enter a valid number';
+                    }
+                    return null;
+                  },
+                ),
+                _buildTextField(
+                  'Labor Cost (cost/hr)',
+                  _laborCostController,
+                  TextInputType.number,
+                  (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Labor cost is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                _buildTextField(
+                  'Maintenance Expenses (cost)',
+                  _maintenanceExpensesController,
+                  TextInputType.number,
+                  (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Maintenance cost is required';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kButtonColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 100, vertical: 15),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                  onPressed: _calculateMHR,
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.calculate, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text('CALCULATE', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
                 ),
-                onPressed: _calculateMHR,
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.calculate, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text('CALCULATE', style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

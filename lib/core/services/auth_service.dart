@@ -59,154 +59,105 @@ class AuthService {
       };
     }
   }
-  // Future<Map<String, dynamic>> registerUser({
-  //   required String firstName,
-  //   required String lastName,
-  //   required String mobile,
-  //   String? email,
-  // }) async {
-  //   try {
-  //     final response = await http.post(
-  //       Uri.parse(registerUrl),
-  //       headers: {'Content-Type': 'application/json'},
-  //       body: jsonEncode({
-  //         "first_name": firstName,
-  //         "last_name": lastName,
-  //         "mobile": mobile,
-  //         "email": email,
-  //       }),
-  //     );
-  //     final responseData = jsonDecode(response.body);
-  //     print("API Response: $responseData");
-  //     return responseData;
-  //     // print("$response");
-  //   } catch (e) {
-  //     return {'status': 'error', 'message': 'Something went wrong. Try again.'};
-  //   }
-  // }
 
-  // Future<void> saveUserData(Map<String, dynamic> userData) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   await prefs.setString('userData', jsonEncode(userData));
-  //   print("$registerUrl");
-  // }
+  Future<void> saveUserData(Map<String, dynamic> userData) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userData', jsonEncode(userData));
+    return;
+  }
 
-  // Future<Map<String, dynamic>> login(String username, String password) async {
-  //   try {
-  //     final response = await http.post(
-  //       Uri.parse(loginUrl),
-  //       headers: {"Content-Type": "application/json"},
-  //       body: jsonEncode({"username": username, "password": password}),
-  //     );
+  Future<Map<String, dynamic>> loginUserOtp({
+    required String mobile,
+  }) async {
+    // Check internet connection
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      return {
+        "success": false,
+        "message": "No internet connection. Please try again."
+      };
+    }
 
-  //     final responseData = jsonDecode(response.body);
-  //     print("API Response: $responseData");
+    final url = Uri.parse("${ApiConstants.baseUrl}/send_otp");
 
-  //     if (responseData["status"] == "success") {
-  //       SharedPreferences prefs = await SharedPreferences.getInstance();
-  //       prefs.setString("userData", jsonEncode(responseData["details"]));
-  //       return responseData;
-  //     } else {
-  //       return responseData;
-  //     }
-  //   } catch (e) {
-  //     print("Login Error: $e");
-  //     return {"status": "failed", "message": "Something went wrong!"};
-  //   }
-  // }
+    try {
+      final response = await http.post(
+        url,
+        body: jsonEncode({
+          "username": mobile,
+        }),
+        headers: {"Content-Type": "application/json"},
+      );
 
-  //  Future<List<Map<String, String>>> fetchMachineCategories() async {
-  //   try {
-  //     final response = await http.get(Uri.parse(categoriesUrl));
+      final responseData = jsonDecode(response.body);
+      if (responseData["status"] == "success") {
+        // Save user data locally
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString("user_data", jsonEncode(responseData["details"]));
 
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body);
-  //       if (data['status'] == 'success') {
-  //         List<Map<String, String>> categories = (data['details'] as List)
-  //             .map((item) => {
-  //                   'id': item['id'].toString(),
-  //                   'name': item['name'].toString(),
-  //                 })
-  //             .toList();
+        return {"success": true, "message": responseData["message"]};
+      } else {
+        return {
+          "success": false,
+          "message": responseData["message"],
+          "errors": responseData["details"]
+        };
+      }
+    } catch (e) {
+      return {
+        "success": false,
+        "message": "Something went wrong. Please try again."
+      };
+    }
+  }
 
-  //         // Store in SharedPreferences
-  //         SharedPreferences prefs = await SharedPreferences.getInstance();
-  //         prefs.setString('machine_categories', jsonEncode(categories));
+  Future<Map<String, dynamic>> loginUser({
+    required String mobile,
+    required String otp,
+  }) async {
+    // Check internet connection
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      return {
+        "success": false,
+        "message": "No internet connection. Please try again."
+      };
+    }
 
-  //         return categories;
-  //       }
-  //     }
-  //     return [];
-  //   } catch (e) {
-  //     return [];
-  //   }
-  // }
+    final url = Uri.parse("${ApiConstants.baseUrl}/do_login");
 
-  // Future<List<Map<String, String>>> getStoredCategories() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String? storedData = prefs.getString('machine_categories');
+    try {
+      final response = await http.post(
+        url,
+        body: jsonEncode({
+          "username": mobile,
+          "otp": otp,
+        }),
+        headers: {"Content-Type": "application/json"},
+      );
 
-  //   if (storedData != null) {
-  //     return List<Map<String, String>>.from(jsonDecode(storedData));
-  //   }
-  //   return [];
-  // }
-  // Future<List<Map<String, dynamic>>> fetchMachineCategories() async {
-  //   try {
-  //     // final response = await http.get(Uri.parse("$baseUrl/categories"));
-  //     final response = await http.get(Uri.parse(categoriUrl));
-  //     if (response.statusCode == 200) {
-  //       final data = json.decode(response.body);
-  //       if (data['status'] == 'success') {
-  //         return List<Map<String, dynamic>>.from(data['details']);
-  //       }
-  //     }
-  //     return [];
-  //   } catch (e) {
-  //     print("Error fetching machine categories: $e");
-  //     return [];
-  //   }
-  // }
+      final responseData = jsonDecode(response.body);
+      if (responseData["status"] == "success") {
+        // Save user data locally
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString("user_data", jsonEncode(responseData["details"]));
 
-//   Future<List<Map<String, String>>> fetchMachineCategories() async {
-//     try {
-//       final response = await http.get(Uri.parse(categoriUrl));
-//       if (response.statusCode == 200) {
-//         final Map<String, dynamic> data = json.decode(response.body);
-//         if (data['status'] == 'success') {
-//           List<Map<String, String>> categories = (data['details'] as List)
-//               .map((item) => {
-//                     'id': item['id'].toString(),
-//                     'name': item['name'].toString(),
-//                   })
-//               .toList();
+        return {"success": true, "message": responseData["message"]};
+      } else {
+        return {
+          "success": false,
+          "message": responseData["message"],
+          "errors": responseData["details"]
+        };
+      }
+    } catch (e) {
+      return {
+        "success": false,
+        "message": "Something went wrong. Please try again."
+      };
+    }
+  }
 
-//           // Save to SharedPreferences
-//           SharedPreferences prefs = await SharedPreferences.getInstance();
-//           prefs.setString('machine_categories', json.encode(categories));
-
-//           return categories;
-//         }
-//       }
-//     } catch (e) {
-//       if (kDebugMode) {
-//         print("Error fetching machine categories: $e");
-//       }
-//     }
-//     return [];
-//   }
-
-//   Future<List<Map<String, dynamic>>> getStoredMachineCategories() async {
-//   final prefs = await SharedPreferences.getInstance();
-//   final String? storedCategories = prefs.getString('machineCategories');
-
-//   if (storedCategories != null) {
-//     List<dynamic> decodedData = jsonDecode(storedCategories);
-//     return decodedData.cast<Map<String, dynamic>>();
-//   } else {
-//     return [];
-//   }
-// }
   Future<List<Map<String, dynamic>>> fetchCategories() async {
     final response =
         await http.get(Uri.parse("https://mhr.sitsolutions.co.in/categories"));

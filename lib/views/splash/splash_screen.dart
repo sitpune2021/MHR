@@ -44,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _animationController.forward();
 
-    Future.delayed(const Duration(seconds: 6), () {
+    Future.delayed(const Duration(seconds: 3), () {
       Provider.of<SplashProvider>(context, listen: false).hideSplash();
       Navigator.pushReplacement(
         context,

@@ -1,9 +1,13 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:machine_hour_rate/core/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
+
   bool _isLoading = false;
   Map<String, String>? _validationErrors;
 
@@ -42,64 +46,80 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Future<String?> registerUser({
-  //   required String firstName,
-  //   required String lastName,
-  //   required String mobile,
-  //   required String email,
-  // }) async {
-  //   _isLoading = true;
-  //   _validationErrors = null;
-  //   notifyListeners();
+  Future<void> loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final userData = prefs.getString("user_data");
 
-  //   final response = await _authService.registerUser(
-  //     firstName: firstName,
-  //     lastName: lastName,
-  //     mobile: mobile,
-  //     email: email,
-  //   );
-
-  //   _isLoading = false;
-
-  //   if (response['status'] == 'success') {
-  //     await _authService.saveUserData({
-  //       "first_name": firstName,
-  //       "last_name": lastName,
-  //       "mobile": mobile,
-  //       "email": email,
-  //     });
-  //     notifyListeners();
-  //     return null;
-  //   } else if (response['status'] == 'error') {
-  //     if (response['details'] != null) {
-  //       _validationErrors = Map<String, String>.from(response['details']);
-  //     }
-  //     notifyListeners();
-  //     return response['message'];
-  //   }
-  //   return 'Something went wrong. Try again.';
-  // }
-
-  Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.containsKey('userData');
+    if (userData != null) {
+      _userData = jsonDecode(userData);
+      if (kDebugMode) {
+        print("User Data: $_userData");
+      }
+      notifyListeners();
+    }
   }
 
-  // Future<String> loginUser(String username) async {
-  //   _isLoading = true;
-  //   notifyListeners();
+  Future<String?> loginUserOtp({
+    required String mobile,
+  }) async {
+    _isLoading = true;
+    _validationErrors = null;
+    notifyListeners();
 
-  //   // final response = await AuthService().login(username, username);
-  //   _isLoading = false;
-  //   notifyListeners();
+    final response = await _authService.loginUserOtp(mobile: mobile);
 
-  //   // if (response["status"] == "success") {
-  //   //   _userData = response["details"];
-  //   //   return "success";
-  //   // } else {
-  //   //   return response["message"];
-  //   // }
-  // }
+    _isLoading = false;
+    notifyListeners();
+
+    if (response["success"]) {
+      // Save user data locally
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString("user_data", jsonEncode(response["details"]));
+
+      _userData = response["details"];
+      notifyListeners();
+      return response["message"];
+    } else {
+      _validationErrors = response["errors"]?.cast<String, String>();
+      notifyListeners();
+      return response["message"];
+    }
+    // return null;
+  }
+
+  Future<String?> loginUser({
+    required String mobile,
+    required String otp,
+  }) async {
+    _isLoading = true;
+    _validationErrors = null;
+    notifyListeners();
+
+    final response = await _authService.loginUser(mobile: mobile, otp: otp);
+
+    _isLoading = false;
+    notifyListeners();
+
+    if (response["success"]) {
+      // Save user data locally
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString("user_data", jsonEncode(response["details"]));
+
+      _userData = response["details"];
+      notifyListeners();
+    } else {
+      _validationErrors = response["errors"]?.cast<String, String>();
+      notifyListeners();
+    }
+    return null;
+  }
+
+  Future<void> logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove("user_data");
+    _userData = null;
+    notifyListeners();
+  }
 
   List<Map<String, dynamic>> _categories = [];
 
