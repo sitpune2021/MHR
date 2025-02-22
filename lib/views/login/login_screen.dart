@@ -77,25 +77,23 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result ?? "Something went wrong"),
-          backgroundColor:
-              (result != null && result.toLowerCase().contains("success"))
-                  ? Colors.green
-                  : Colors.red,
+          backgroundColor: (result!.toLowerCase().contains("success"))
+              ? Colors.green
+              : Colors.red,
         ),
       );
 
-      if (result != null &&
-          (result.toLowerCase().contains("success") ||
-              result.toLowerCase().contains("otp sent"))) {
+      if ((result.toLowerCase().contains("success") ||
+          result.toLowerCase().contains("otp sent"))) {
         setState(() {
-          _isOtpSent = true; // ✅ Enable OTP input field
+          _isOtpSent = true;
           _isResendEnabled = false;
           _remainingTime = 30;
         });
         _startTimer();
       } else {
         setState(() {
-          _isOtpSent = false; // If error, re-enable Send OTP button
+          _isOtpSent = false;
         });
       }
     }
@@ -109,9 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
         otp: _otpController.text.trim(),
       );
 
-      if (errorMessage == null) {
-        showLoginDialog(context);
-      } else if (errorMessage == "No internet connection. Please try again.") {
+      if (errorMessage == "No internet connection. Please try again.") {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(

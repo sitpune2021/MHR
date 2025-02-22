@@ -1,0 +1,55 @@
+
+import 'dart:convert';
+
+// CurrencyModel currencyModelFromJson(String str) => CurrencyModel.fromJson(json.decode(str));
+
+// String currencyModelToJson(CurrencyModel data) => json.encode(data.toJson());
+
+// class CurrencyModel {
+//     String status;
+//     String message;
+//     List<Detail> details;
+
+//     CurrencyModel({
+//         required this.status,
+//         required this.message,
+//         required this.details,
+//     });
+
+//     factory CurrencyModel.fromJson(Map<String, dynamic> json) => CurrencyModel(
+//         status: json["status"],
+//         message: json["message"],
+//         details: List<Detail>.from(json["details"].map((x) => Detail.fromJson(x))),
+//     );
+
+//     Map<String, dynamic> toJson() => {
+//         "status": status,
+//         "message": message,
+//         "details": List<dynamic>.from(details.map((x) => x.toJson())),
+//     };
+// }
+
+class CurrencyModel {
+    String id;
+    String name;
+    String amount;
+
+    CurrencyModel({
+        required this.id,
+        required this.name,
+        required this.amount,
+
+    });
+
+    factory CurrencyModel.fromJson(Map<String, dynamic> json) => CurrencyModel(
+        id: json["id"],
+        name: json["name"],
+        amount: json["amount"],
+    );
+
+    // Map<String, dynamic> toJson() => {
+    //     "id": id,
+    //     "name": name,
+    //     "amount": amount,
+    // };
+}

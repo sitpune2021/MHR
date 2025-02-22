@@ -45,6 +45,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        toolbarHeight: MediaQuery.sizeOf(context).height * 0.08,
         backgroundColor: kBackgroundColor,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
@@ -52,27 +53,30 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         automaticallyImplyLeading: false,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              backgroundColor: Colors.white,
-              radius: 28,
+        centerTitle: true,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: CircleAvatar(
+            backgroundColor: Colors.white,
+            radius: 30,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50),
               child: Image.asset(
                 'assets/logo.png',
-                width: 40,
+                width: 30,
+                height: 40,
+                fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(width: 100), // Space between logo and title
-            Text(
-              _titles[_selectedIndex], // Dynamic title
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold),
-            ),
-          ],
+          ),
+        ),
+        title: Text(
+          _titles[_selectedIndex],
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: _pages[_selectedIndex],
