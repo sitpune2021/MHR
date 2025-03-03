@@ -14,8 +14,8 @@ import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class MHRCalculatorsScreen extends StatefulWidget {
-  MHRCalculatorsScreen({super.key});
+class MHRCalScreen extends StatefulWidget {
+  MHRCalScreen({super.key});
 
   final Map<String, double> dataMap = {
     "Flutter": 40,
@@ -32,10 +32,10 @@ class MHRCalculatorsScreen extends StatefulWidget {
   ];
 
   @override
-  State<MHRCalculatorsScreen> createState() => _MHRCalculatorsScreenState();
+  State<MHRCalScreen> createState() => _MHRCalScreennState();
 }
 
-class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
+class _MHRCalScreennState extends State<MHRCalScreen> {
   String? machineHourRate;
   get dataMap => null;
   MainMachineModel? selectedMachineId;
@@ -57,6 +57,9 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
       final provider = Provider.of<CalculationProvider>(context, listen: false);
       provider.calculation = loadedCalculation;
       provider.notifyListeners(); // Notify listeners to rebuild
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No calculation result found.")));
     }
   }
 
@@ -205,9 +208,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
   Widget build(BuildContext context) {
     final provider = Provider.of<CalculationProvider>(context);
     final result = provider.calculationResult;
-    // print('selectedMainMachineId: $selectedMachineId');
 
-    // print('storedValues: $storedValues');
     return WillPopScope(
       onWillPop: () async {
         if (Navigator.canPop(context)) {
@@ -232,7 +233,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                         const SizedBox(
                           height: 20,
                         ),
-                        const Text("VIEW",
+                        const Text("UPDATE REPORT",
                             style: TextStyle(
                                 fontSize: 28, fontWeight: FontWeight.bold)),
                         SizedBox(
@@ -261,8 +262,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                  "----MHR----${result.mhr?.toString() ?? 'N/A'}",
+                              Text(result.mhr?.toString() ?? 'N/A',
                                   style: const TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold)),
@@ -395,24 +395,6 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    // calculation save
-                                    ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 20.0, vertical: 10.0),
-                                        backgroundColor: kButtonColor,
-                                        foregroundColor: Colors.white,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                        ),
-                                      ),
-                                      onPressed: () async {
-                                        // _showEditDialog(calculation);
-                                      },
-                                      icon: const Icon(Icons.edit_attributes),
-                                      label: const Text("Edit Calculation"),
-                                    ),
                                     //pdf download
                                     ElevatedButton.icon(
                                       style: ElevatedButton.styleFrom(

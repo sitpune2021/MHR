@@ -1,10 +1,15 @@
 // import 'package:flutter/foundation.dart';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:machine_hour_rate/views/login/login_screen.dart';
 import 'package:machine_hour_rate/views/login/register_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
   final bool isGuestUser;
@@ -16,7 +21,13 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  String email = "";
+  String mobile = "";
+  String name = "";
   String _appVersion = " ";
+
+  File? _image;
+  String? _imagePath;
 
   final String _applink =
       "https://play.google.com/store/apps/details?id=com.example.myapp";
@@ -28,25 +39,34 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     _loadAppVersion();
     _loadUserStatus();
+    _loadSavedImage();
+    // _loadUserData();
   }
 
   Future<void> _loadUserStatus() async {
-    bool status = await getUserLoginStatus();
+    // bool status = await getUserLoginStatus();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      isGuestUser = status;
+      email = prefs.getString("user_email") ?? "user@example.com";
+      mobile = prefs.getString("user_mobile") ?? "+91 9876543210";
+      name = prefs.getString("user_name") ?? "Guest User ";
+      isGuestUser = prefs.getBool("is_logged_in") ?? false;
     });
+    // setState(() {
+    //   isGuestUser = status;
+    // });
   }
 
   Future<bool> getUserLoginStatus() async {
-    // Implement your logic to get the user login status here
-    // For example, return true if the user is logged in, otherwise false
-    return Future.value(false); // Replace with actual implementation
+// This is a placeholder for your actual login status check
+
+    return Future.value(false);
   }
 
   Future<void> _loadAppVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     setState(() {
-      _appVersion = "${packageInfo.version} + ${packageInfo.buildNumber}";
+      _appVersion = "${packageInfo.version} ";
       if (kDebugMode) {
         print("App version: $_appVersion");
       }
@@ -54,6 +74,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _shareApp() {
+    FocusScope.of(context).unfocus();
     Share.share("Check out this amazing app: $_applink");
     if (kDebugMode) {
       print("App shared link: $_applink");
@@ -83,12 +104,14 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _logout() {
+  Future<void> _logout() async {
     if (kDebugMode) {
       print("User logged out");
     }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+        context, MaterialPageRoute(builder: (context) => LoginScreen()));
   }
 
   void _confirmDeleteAccount() {
@@ -115,181 +138,284 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _deleteAccount() {
+  void _deleteAccount() async {
     if (kDebugMode) {
       print("User account deleted");
     }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
     Navigator.pushReplacement(context,
         MaterialPageRoute(builder: (context) => const RegisterScreen()));
+  }
+
+  // stored image
+  Future<void> _loadSavedImage() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedImagePath = prefs.getString('profile_image');
+    if (savedImagePath != null) {
+      setState(() {
+        _image = File(savedImagePath);
+        _imagePath = savedImagePath;
+      });
+    }
+  }
+
+  // Pick an image and store it in SharedPreferences
+  Future<void> _pickImage({bool fromCamera = false}) async {
+    PermissionStatus status;
+
+    if (fromCamera) {
+      status = await Permission.camera.request();
+    } else {
+      if (Platform.isAndroid) {
+        status = await Permission.photos.request();
+        if (status.isDenied || status.isPermanentlyDenied) {
+          status = await Permission.storage.request();
+        }
+      } else {
+        status = await Permission.photos.request();
+      }
+    }
+
+    if (status.isGranted) {
+      final pickedFile = await ImagePicker().pickImage(
+        source: fromCamera ? ImageSource.camera : ImageSource.gallery,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+          _imagePath = pickedFile.path;
+        });
+        _saveImagePath(pickedFile.path);
+      }
+    } else if (status.isPermanentlyDenied) {
+      openAppSettings();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Permission denied. Cannot access photos.")),
+      );
+    }
+  }
+
+  // Save the selected image path in SharedPreferences
+  Future<void> _saveImagePath(String path) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('profile_image', path);
+  }
+
+  // Remove stored image path
+  Future<void> _removeImage() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('profile_image');
+    setState(() {
+      _image = null;
+      _imagePath = null;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20.0),
-                  height: MediaQuery.sizeOf(context).height * 0.3,
-                  width: MediaQuery.sizeOf(context).width * 0.8,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.person,
-                          size: 50,
-                          color: Colors.blue,
+        backgroundColor: Colors.white,
+        resizeToAvoidBottomInset: false,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 10, right: 10, bottom: 60),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    height: MediaQuery.of(context).size.height * 0.25,
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(10.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
                         ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
+                      ],
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
+                          Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Colors.grey[300],
+                                backgroundImage:
+                                    _image != null ? FileImage(_image!) : null,
+                                child: _image == null
+                                    ? const Icon(
+                                        Icons.person,
+                                        size: 50,
+                                        color: Colors.blue,
+                                      )
+                                    : null,
+                              ),
+                              if (_image != null)
+                                Positioned(
+                                  top: 5,
+                                  right: 0.1,
+                                  child: GestureDetector(
+                                    onTap: _removeImage,
+                                    child: const CircleAvatar(
+                                      radius: 12,
+                                      backgroundColor: Colors.blue,
+                                      child: Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                        size: 15,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              Positioned(
+                                bottom: 5,
+                                right: 0.1,
+                                child: GestureDetector(
+                                  onTap: _pickImage,
+                                  child: const CircleAvatar(
+                                    radius: 12,
+                                    backgroundColor: Colors.blue,
+                                    child: Icon(
+                                      Icons.camera_alt,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
                             "User Name",
                             style: TextStyle(
                                 fontSize: 20,
                                 color: Colors.blue,
                                 fontWeight: FontWeight.bold),
                           ),
-                          SizedBox(height: 2),
-                          Text(
+                          const SizedBox(height: 2),
+                          const Text(
                             "Email: user@example.com",
                             style: TextStyle(fontSize: 16, color: Colors.black),
                           ),
-                          SizedBox(height: 2),
-                          Text(
+                          const SizedBox(height: 2),
+                          const Text(
                             "Mobile: +91 9876543210",
                             style: TextStyle(fontSize: 16, color: Colors.black),
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 40),
-                Container(
-                  padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
-                  height: MediaQuery.sizeOf(context).height * 0.4,
-                  width: MediaQuery.sizeOf(context).width * 0.9,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(10.0),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    height: MediaQuery.of(context).size.height * 0.45,
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        InkWell(
+                          onTap: _shareApp,
+                          child: const ListTile(
+                            leading: Icon(Icons.share, color: Colors.blue),
+                            title: Text("Share the App",
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        const Divider(thickness: 1, indent: 20, endIndent: 20),
+                        InkWell(
+                          onTap: _shareApp,
+                          child: const ListTile(
+                            leading: Icon(Icons.star, color: Colors.blue),
+                            title: Text("Rate the App",
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        if (!widget.isGuestUser) ...[
+                          const Divider(
+                              thickness: 1, indent: 20, endIndent: 20),
+                          InkWell(
+                            onTap: _confirmLogout,
+                            child: const ListTile(
+                              leading: Icon(Icons.login, color: Colors.blue),
+                              title: Text("Log Out",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                          const Divider(
+                              thickness: 1, indent: 20, endIndent: 20),
+                          InkWell(
+                            onTap: _confirmDeleteAccount,
+                            child: const ListTile(
+                              leading: Icon(Icons.delete, color: Colors.blue),
+                              title: Text("Delete Account",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ],
+                        const Divider(thickness: 1, indent: 20, endIndent: 20),
+                        InkWell(
+                          child: ListTile(
+                            leading: const Icon(Icons.info, color: Colors.blue),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text("App Version",
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold)),
+                                ),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(" $_appVersion",
+                                      style: const TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold)),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      InkWell(
-                        onTap: _shareApp,
-                        child: const ListTile(
-                          leading: Icon(Icons.share, color: Colors.blue),
-                          title: Text("Share the App",
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                      const Divider(thickness: 1, indent: 20, endIndent: 20),
-                      InkWell(
-                        onTap: _shareApp,
-                        child: const ListTile(
-                          leading: Icon(Icons.star, color: Colors.blue),
-                          title: Text("Rate the App",
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                      !widget.isGuestUser == false
-                          ? const Divider(
-                              thickness: 1,
-                              indent: 2,
-                              endIndent: 2,
-                            )
-                          : Container(),
-                      !widget.isGuestUser == false
-                          ? InkWell(
-                              onTap: _confirmLogout,
-                              child: const ListTile(
-                                leading: Icon(Icons.login, color: Colors.blue),
-                                title: Text("Log Out",
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold)),
-                              ),
-                            )
-                          : Container(),
-                      !widget.isGuestUser == false
-                          ? const Divider(
-                              thickness: 1,
-                              indent: 2,
-                              endIndent: 2,
-                            )
-                          : Container(),
-                      !widget.isGuestUser == false
-                          ? InkWell(
-                              onTap: _confirmDeleteAccount,
-                              child: const ListTile(
-                                leading: Icon(Icons.delete, color: Colors.blue),
-                                title: Text("Delete Account",
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold)),
-                              ),
-                            )
-                          : Container(),
-                      const Divider(thickness: 1, indent: 20, endIndent: 20),
-                      InkWell(
-                        onTap: _shareApp,
-                        child: ListTile(
-                          leading: const Icon(Icons.info, color: Colors.blue),
-                          title: Text("App Version $_appVersion",
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 }

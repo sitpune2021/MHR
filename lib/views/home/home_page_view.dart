@@ -13,9 +13,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final bool isGuestUser = false;
-
   int _selectedIndex = 0;
+
   late List<Widget> _pages;
+  late List<String> _titles;
 
   @override
   void initState() {
@@ -24,6 +25,12 @@ class _HomePageState extends State<HomePage> {
       const HomeScreen(),
       const CalculationSheet(),
       SettingsPage(isGuestUser: isGuestUser),
+    ];
+
+    _titles = [
+      'Dashboard',
+      'New Calculation',
+      'Profile',
     ];
   }
 
@@ -36,7 +43,10 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        toolbarHeight: MediaQuery.sizeOf(context).height * 0.08,
         backgroundColor: kBackgroundColor,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
@@ -44,15 +54,31 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         automaticallyImplyLeading: false,
-        title: CircleAvatar(
-          backgroundColor: Colors.white,
-          radius: 28,
-          child: Image.asset(
-            'assets/logo.png',
-            width: 40,
+        centerTitle: true,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: CircleAvatar(
+            backgroundColor: Colors.white,
+            radius: 30,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: Image.asset(
+                'assets/logo.png',
+                width: 30,
+                height: 40,
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
         ),
-        // centerTitle: true,
+        title: Text(
+          _titles[_selectedIndex],
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: ClipRRect(
@@ -63,7 +89,7 @@ class _HomePageState extends State<HomePage> {
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           showUnselectedLabels: false,
-          showSelectedLabels: true, // This will show the label when selected
+          showSelectedLabels: true,
           backgroundColor: kBackgroundColor,
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,

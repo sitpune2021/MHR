@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:machine_hour_rate/providers/auth_provider.dart';
@@ -5,6 +6,7 @@ import 'package:machine_hour_rate/views/home/home_page_view.dart';
 import 'package:machine_hour_rate/views/login/login_screen.dart';
 import 'package:machine_hour_rate/views/login/verification_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -34,12 +36,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    // final isLoading = authProvider.isLoading;
     final validationErrors = authProvider.validationErrors;
-
     return Scaffold(
       backgroundColor: Colors.white,
-      // resizeToAvoidBottomInset: false,
       body: Stack(children: [
         SingleChildScrollView(
           padding:
@@ -73,7 +72,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _firstNameController,
                   keyboardType: TextInputType.name,
-                  cursorColor: Colors.black,
+                  cursorColor: Colors.blue,
+                  cursorErrorColor: Colors.blue,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -87,22 +87,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),
                       borderSide: BorderSide(color: Colors.blue, width: 2.0),
                     ),
+                    errorBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(color: Colors.grey, width: 2.0),
+                    ),
+                    focusedErrorBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                    ),
                   ),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Enter your first name' : null,
-                  // validator: (value) {
-                  //   if (value == null || value.isEmpty) {
-                  //     return 'Please enter your name';
-                  //   }
-                  //   // Add  validation if needed
-                  //   return null;
-                  // },
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Enter your first name.';
+                    }
+                    final RegExp nameRegExp = RegExp(r'^[a-zA-Z]+$');
+                    if (!nameRegExp.hasMatch(value)) {
+                      return 'Only letters, no spaces, numbers, or special characters.';
+                    }
+                    return null;
+                  },
+                  // validator: (value) =>
+                  //     value!.isEmpty ? 'Enter your first name.' : null,
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _lastNameController,
                   keyboardType: TextInputType.name,
-                  cursorColor: Colors.black,
+                  cursorColor: Colors.blue,
+                  cursorErrorColor: Colors.blue,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -116,13 +128,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),
                       borderSide: BorderSide(color: Colors.blue, width: 2.0),
                     ),
+                    errorBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(color: Colors.grey, width: 2.0),
+                    ),
+                    focusedErrorBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                    ),
                   ),
+
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your valid name';
+                    if (value!.isEmpty) {
+                      return 'Enter your last name.';
+                    }
+                    final RegExp nameRegExp = RegExp(r'^[a-zA-Z]+$');
+                    if (!nameRegExp.hasMatch(value)) {
+                      return 'Only letters, no spaces, numbers, or special characters.';
                     }
                     return null;
                   },
+                  // validator: (value) {
+                  //   if (value == null || value.isEmpty) {
+                  //     return 'Enter your last name.';
+                  //   }
+                  //   return null;
+                  // },
                 ),
                 const SizedBox(height: 20),
                 const Row(
@@ -136,72 +167,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 15, vertical: 20),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text(
-                          "+91",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextFormField(
-                            controller: _mobileController,
-                            keyboardType: TextInputType.phone,
-                            cursorColor: Colors.black,
-                            inputFormatters: [
-                              FilteringTextInputFormatter
-                                  .digitsOnly, // Allows only numbers
-                              LengthLimitingTextInputFormatter(
-                                  10), // Limits input to 10 digits
-                            ],
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                                borderSide: const BorderSide(
-                                    color: Colors.yellowAccent),
-                              ),
-                              labelText: "Mobile Number",
-                              labelStyle: const TextStyle(color: Colors.black),
-                              hintText: "Enter mobile number",
-                              errorText: validationErrors?['mobile'],
-                              focusedBorder: const OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10.0)),
-                                borderSide:
-                                    BorderSide(color: Colors.blue, width: 2.0),
-                              ),
-                            ),
-                            // validator: (value) => value!.isEmpty
-                            //     ? 'Enter your mobile number'
-                            //     : null,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your mobile number';
-                              } else if (value.length != 10) {
-                                return 'Mobile number must be 10 digits';
-                              }
-                              return null;
-                            },
-                            onChanged: (value) {
-                              if (value.length == 10) {
-                                FocusManager.instance.primaryFocus
-                                    ?.unfocus(); // Closes the keyboard
-                              }
-                            }),
-                      ),
+                TextFormField(
+                    controller: _mobileController,
+                    keyboardType: TextInputType.phone,
+                    cursorColor: Colors.blue,
+                    cursorErrorColor: Colors.blue,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(10),
                     ],
-                  ),
-                ),
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide:
+                            const BorderSide(color: Colors.yellowAccent),
+                      ),
+                      labelText: "Mobile Number",
+                      labelStyle: const TextStyle(color: Colors.black),
+                      hintText: "Enter mobile number",
+                      errorText: validationErrors?['mobile'],
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                        borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                      ),
+                      errorBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                        borderSide: BorderSide(color: Colors.grey, width: 2.0),
+                      ),
+                      focusedErrorBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                        borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Enter your mobile number.';
+                      } else if (value.length != 10) {
+                        return 'Mobile number must be 10 digits';
+                      }
+                      return null;
+                    },
+                    onChanged: (value) {
+                      if (value.length == 10) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      }
+                    }),
                 const SizedBox(height: 20),
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -217,7 +227,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  cursorColor: Colors.black,
+                  cursorColor: Colors.blue,
+                  cursorErrorColor: Colors.blue,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -226,12 +237,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     labelText: "Email (Optional)",
                     labelStyle: const TextStyle(color: Colors.black),
                     hintText: "Enter your email",
-                    // errorText: validationErrors?['email'],
+                    errorText: validationErrors?['email'],
                     focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),
                       borderSide: BorderSide(color: Colors.blue, width: 2.0),
                     ),
+                    errorBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(color: Colors.grey, width: 2.0),
+                    ),
+                    focusedErrorBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                    ),
                   ),
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      final RegExp emailRegExp = RegExp(
+                        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                      );
+                      if (!emailRegExp.hasMatch(value)) {
+                        return 'Please enter a valid email address.';
+                      }
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 5),
                 Row(
@@ -250,16 +280,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const Text("I agree with privacy policy"),
                   ],
                 ),
-                // const SizedBox(height: 10),
                 authProvider.isLoading
                     ? const CircularProgressIndicator()
                     : SizedBox(
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: _isPrivacyChecked
-                              ? () => _registerUser(context)
-                              : null,
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              if (_isPrivacyChecked) {
+                                _registerUser(context);
+                              } else {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    backgroundColor: Colors.white,
+                                    title: const Text("Privacy Policy",
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold)),
+                                    content: const Text(
+                                        "You must agree with the privacy policy to sign up."),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: const Text(
+                                            "OK",
+                                            style:
+                                                TextStyle(color: Colors.blue),
+                                          )),
+                                    ],
+                                  ),
+                                );
+                              }
+                            }
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
                             foregroundColor: Colors.red,
@@ -273,7 +329,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                       ),
-                // const SizedBox(height: 10),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
@@ -283,7 +338,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const LoginScreen()),
+                              builder: (context) => LoginScreen()),
                         );
                       },
                       child: const Row(
@@ -338,6 +393,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _registerUser(context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (kDebugMode) {
+      print("First Name: ${_firstNameController.text}");
+    }
+    if (kDebugMode) {
+      print("Last Name: ${_lastNameController.text}");
+    }
+    if (kDebugMode) {
+      print("Mobile Number: ${_mobileController.text}");
+    }
+    if (kDebugMode) {
+      print("Email: ${_emailController.text}");
+    }
+
     if (_formKey.currentState!.validate()) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       String? errorMessage = await authProvider.registerUser(

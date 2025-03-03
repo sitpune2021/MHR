@@ -1,9 +1,16 @@
-import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:machine_hour_rate/core/theme/colors.dart';
-import 'package:machine_hour_rate/providers/auth_provider.dart';
+import 'package:machine_hour_rate/models/currencyModel.dart';
+import 'package:machine_hour_rate/models/machine_categoriesModel.dart';
+import 'package:machine_hour_rate/models/machine_subcategoriesModel.dart';
+import 'package:machine_hour_rate/models/mainmachineModel.dart';
 import 'package:machine_hour_rate/views/calculation/mhr_calculation.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:machine_hour_rate/providers/calculationprovider.dart';
 
 class CalculationSheet extends StatefulWidget {
   const CalculationSheet({super.key});
@@ -14,259 +21,915 @@ class CalculationSheet extends StatefulWidget {
 
 class _CalculationSheetState extends State<CalculationSheet> {
   final _formKey = GlobalKey<FormState>();
+  List<CurrencyModel> currencyList = [];
   String? selectedCurrency;
-  String? selectedMachineName;
-  String? selectedMachineWaysCategory;
+  String? selectedCurrencyId;
+  String? selectedCurrencyName;
+
+  List<MainMachineModel> machineList = [];
+  String? selectedMachine;
+  String? selectedMachineId;
+
+  List<MachineCatModel> categoryList = [];
+  String? selectedCategory;
+  String? selectedCategoryId;
+
+  List<MachineSubCatModel> subcategoryList = [];
+  String? selectedSubCategory;
+  String? selectedSubCategoryId;
+
   final TextEditingController _powerConsumptionController =
       TextEditingController();
-  final TextEditingController _laborCostController = TextEditingController();
-  final TextEditingController _maintenanceExpensesController =
+  final TextEditingController _maintenanceCostController =
       TextEditingController();
-
+  final TextEditingController _machinePriceController = TextEditingController();
+  final TextEditingController _machineLifeController = TextEditingController();
+  final TextEditingController _salvageValueController = TextEditingController();
+  final TextEditingController _powerCostController = TextEditingController();
+  final TextEditingController _operatorWageController = TextEditingController();
+  final TextEditingController _consumableCostController =
+      TextEditingController();
+  final TextEditingController _factoryRentController = TextEditingController();
+  final TextEditingController _operatingHoursController =
+      TextEditingController();
+  final TextEditingController _workingDaysController = TextEditingController();
+  final TextEditingController _fuelCostController = TextEditingController();
   @override
   void initState() {
     super.initState();
-    Future.microtask(() =>
-        Provider.of<AuthProvider>(context, listen: false).loadCategories());
+    _fetchData();
+    fetchCurrencyData();
+    fetchMachineData();
+  }
+
+  String? _validateInput(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'This field is required';
+    }
+    final double? number = double.tryParse(value);
+    if (number == null || number < 0) {
+      return 'Enter a valid positive number';
+    }
+    return null;
+  }
+
+// 1 currency List
+  Future<void> fetchCurrencyData() async {
+    final url = Uri.parse('https://mhr.sitsolutions.co.in/get_currency');
+    try {
+      final response = await http.get(url);
+      if (kDebugMode) {
+        print("API Response Status Code: ${response.statusCode}");
+      }
+      if (kDebugMode) {
+        print("API Response Body: ${response.body}");
+      }
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = json.decode(response.body);
+
+        if (!jsonData.containsKey("details") || jsonData["details"] == null) {
+          if (kDebugMode) {
+            print("Error: 'details' key missing or null");
+          }
+          return;
+        }
+        List<dynamic> currencyJsonList = jsonData["details"];
+        List<CurrencyModel> currencies =
+            currencyJsonList.map((e) => CurrencyModel.fromJson(e)).toList();
+
+        setState(() {
+          currencyList = currencies;
+        });
+
+        if (kDebugMode) {
+          print("Currency List Updated: ${currencyList.map((e) => e.name)}");
+        }
+      } else {
+        throw Exception('Failed to load currency data');
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error fetching currency data: $error');
+      }
+    }
+  }
+
+//2 Fetch Main Machine
+  Future<void> fetchMachineData() async {
+    final url = Uri.parse('https://mhr.sitsolutions.co.in/maincategories');
+    try {
+      final response = await http.get(url);
+      if (kDebugMode) {
+        print("API Response Status Code: ${response.statusCode}");
+      }
+      if (kDebugMode) {
+        print("API Response Body: ${response.body}");
+      }
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = json.decode(response.body);
+        if (!jsonData.containsKey("details") || jsonData["details"] == null) {
+          if (kDebugMode) {
+            print("Error: 'details' key missing or null");
+          }
+          return;
+        }
+        List<dynamic> machineJsonList = jsonData["details"];
+        List<MainMachineModel> machines =
+            machineJsonList.map((e) => MainMachineModel.fromJson(e)).toList();
+        setState(() {
+          machineList = machines;
+        });
+      } else {
+        throw Exception('Failed to load machine data');
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error fetching machine data: $error');
+      }
+    }
+  }
+
+// 3 Fetch Machine Categories (POST)
+  Future<void> fetchCategoryData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (kDebugMode) {
+      print(prefs.getString('selectedMainMachineId'));
+    }
+    final url = Uri.parse('https://mhr.sitsolutions.co.in/categories');
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(
+            {"main_cat_id": prefs.getString('selectedMainMachineId')}),
+      );
+      if (kDebugMode) {
+        print("API Response Status Code: ${response.statusCode}");
+      }
+      if (kDebugMode) {
+        print("API Response Body: ${response.body}");
+      }
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = json.decode(response.body);
+        if (!jsonData.containsKey("details") || jsonData["details"] == null) {
+          if (kDebugMode) {
+            print("Error: 'details' key missing or null");
+          }
+          return;
+        }
+        List<dynamic> categoryJsonList = jsonData["details"];
+        List<MachineCatModel> categories =
+            categoryJsonList.map((e) => MachineCatModel.fromJson(e)).toList();
+        setState(() {
+          categoryList = categories;
+          if (kDebugMode) {
+            print("Categories Loaded: ${categoryList.map((e) => e.name)}");
+          }
+        });
+      } else {
+        throw Exception('Failed to load categories');
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error fetching category data: $error');
+      }
+    }
+  }
+
+// 4 Fetch Machine SubCategories (POST)
+  Future<void> fetchSubCategories() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (kDebugMode) {
+      print(prefs.getString('selectedMainMachineId'));
+    }
+    if (kDebugMode) {
+      print(prefs.getString('selectedMachinecatId'));
+    }
+
+    final url = Uri.parse("https://mhr.sitsolutions.co.in/subcategories");
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          "cat_id": prefs.getString('selectedMachinecatId'),
+        }),
+      );
+      if (kDebugMode) {
+        print("API Response subcategories.................: ${response.body}");
+      }
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = json.decode(response.body);
+        if (!jsonData.containsKey("details") || jsonData["details"] == null) {
+          if (kDebugMode) {
+            print("Error: 'details' key missing or null");
+          }
+          return;
+        }
+        List<dynamic> subcategoryJsonList = jsonData["details"];
+        List<MachineSubCatModel> subcategories = subcategoryJsonList
+            .map((e) => MachineSubCatModel.fromJson(e))
+            .toList();
+        setState(() {
+          subcategoryList = subcategories;
+          if (kDebugMode) {
+            print("SubCategories length........: ${subcategoryList.length}");
+          }
+          if (kDebugMode) {
+            print(
+                "SubCategories catid...........: ${subcategoryList.map((e) => e.id)}");
+          }
+        });
+      } else {
+        throw Exception('Failed to load subcategories');
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error fetching subcategory data: $error');
+      }
+    }
+  }
+
+  Future<void> _fetchData() async {
+    fetchCurrencyData();
+    fetchMachineData();
+    fetchCategoryData();
+    fetchSubCategories();
+  }
+
+  Future<void> _refreshData() async {
+    await _fetchData();
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    // final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          top: 16,
-          left: 16,
-          right: 16,
-        ),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'NEW CALCULATION',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        child: Column(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: 16,
+                  right: 16,
                 ),
-                const SizedBox(height: 10),
-                _buildDropdown(), // Currency selection
-                _buildMachineDropdown(), // Machine Name Dropdown
-                _buildMachineWaysCategoryDropdown(), // Machine Ways Categories Dropdown
-                _buildTextField(
-                  'Power Consumption (kW)',
-                  _powerConsumptionController,
-                  TextInputType.number,
-                  (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Power consumption is required';
-                    }
-                    if (double.tryParse(value) == null) {
-                      return 'Enter a valid number';
-                    }
-                    return null;
-                  },
-                ),
-                _buildTextField(
-                  'Labor Cost (cost/hr)',
-                  _laborCostController,
-                  TextInputType.number,
-                  (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Labor cost is required';
-                    }
-                    if (double.tryParse(value) == null) {
-                      return 'Enter a valid amount';
-                    }
-                    return null;
-                  },
-                ),
-                _buildTextField(
-                  'Maintenance Expenses (cost)',
-                  _maintenanceExpensesController,
-                  TextInputType.number,
-                  (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Maintenance cost is required';
-                    }
-                    if (double.tryParse(value) == null) {
-                      return 'Enter a valid amount';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kButtonColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 10),
+                        _buildCurrency(),
+                        _buildMachine(),
+                        _buildMachineCate(),
+                        _buildMachineSub(),
+                        _buildTextField(
+                            'Maintenance Cost per Year (MC) (Rs)',
+                            _maintenanceCostController,
+                            TextInputType.number,
+                            _validateInput),
+                        _buildTextField(
+                            'Machine Purchase Price (MP) (Rs)',
+                            _machinePriceController,
+                            TextInputType.number,
+                            _validateInput),
+                        _buildTextField(
+                            'Machine Life in Years (L) (Yrs)',
+                            _machineLifeController,
+                            TextInputType.number,
+                            _validateInput),
+                        _buildTextField(
+                            'Salvage Value (S) (Rs)',
+                            _salvageValueController,
+                            TextInputType.number,
+                            _validateInput),
+                        // Show Power Consumption & Power Cost only if selectedMachineId == 1
+                        if (selectedMachineId == '1') ...[
+                          _buildTextField(
+                              'Power Consumption per Hour (PC) (Kw)',
+                              _powerConsumptionController,
+                              TextInputType.number,
+                              _validateInput),
+                          _buildTextField(
+                              'Power Cost per Unit (PU) (Rs)',
+                              _powerCostController,
+                              TextInputType.number,
+                              _validateInput),
+                        ],
+                        // Show Fuel Cost only if selectedMachineId == 2
+                        if (selectedMachineId == '2')
+                          _buildTextField(
+                              'Fuel Cost (PH) (Rs)',
+                              _fuelCostController,
+                              TextInputType.number,
+                              _validateInput),
+                        _buildTextField(
+                            'Operator Wage per Hour (OW) (Rs)',
+                            _operatorWageController,
+                            TextInputType.number,
+                            _validateInput),
+                        _buildTextField(
+                            'Consumables Cost per Year (CC) (Rs)',
+                            _consumableCostController,
+                            TextInputType.number,
+                            _validateInput),
+                        _buildTextField(
+                            'Factory Rent/Overheads per Year (RA) (Rs)',
+                            _factoryRentController,
+                            TextInputType.number,
+                            _validateInput),
+                        _buildTextField(
+                            'Operating Hours per Day (H) (Hr)',
+                            _operatingHoursController,
+                            TextInputType.number,
+                            _validateInput),
+                        _buildTextField(
+                            'Working Days per Year (D) (Days))',
+                            _workingDaysController,
+                            TextInputType.number,
+                            _validateInput),
+                      ],
                     ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 100, vertical: 15),
-                  ),
-                  onPressed: _calculateMHR,
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.calculate, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text('CALCULATE', style: TextStyle(color: Colors.white)),
-                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
-              ],
+              ),
             ),
-          ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 16),
+              color: Colors.white,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kButtonColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                ),
+                onPressed: _calculateMHR,
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Icon(Icons.calculate, color: Colors.white),
+                    SizedBox(width: 10),
+                    Text('CALCULATE', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildDropdown() {
+  Widget _buildCurrency() {
     return _buildStyledDropdown(
-      'Select your currency',
-      ['USD (\$)', 'INR (₹)'],
+      'Select Currency',
+      currencyList,
       selectedCurrency,
-      (value) => setState(() => selectedCurrency = value),
-    );
-  }
-
-  // Widget _buildMachineDropdown() {
-  //   return _buildStyledDropdown(
-  //     'Select Machine Categorys',
-  //     ['Metalworking Machine', 'Woodworking Machine', 'Extile Machine'],
-  //     selectedMachineName,
-  //     (value) => setState(() => selectedMachineName = value),
-  //   );
-  // }
-
-  Widget _buildMachineDropdown() {
-    return Consumer<AuthProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoading) {
-          return const CircularProgressIndicator(); // Show loading indicator
+      (String? name) async {
+        if (name != null) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          CurrencyModel selecteed =
+              currencyList.firstWhere((e) => "${e.name} - ${e.amount}" == name);
+          await prefs.setString('selectedCurrency', name);
+          await prefs.setString('selectedCurrencyId', selecteed.id);
+          await prefs.setString('selectedCurrencyAmountName', selecteed.name);
+          await prefs.setString('selectedCurrencyName', selecteed.amount);
+          setState(() {
+            selectedCurrency = name;
+          });
+          if (kDebugMode) {
+            print(
+                "-------Currency Id---------${prefs.getString('selectedCurrencyId')}");
+          }
+          if (kDebugMode) {
+            print(
+                "-------Currency name---------${prefs.getString('selectedCurrencyAmountName')}");
+          }
+          if (kDebugMode) {
+            print(
+                "-------Currency amount---------${prefs.getString('selectedCurrencyName')}");
+          }
         }
-
-        if (provider.categories.isEmpty) {
-          return const Text(
-              "No categories available"); // Show message if no data
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Currency selection is required';
         }
-
-        return _buildStyledDropdown(
-          'Select Machine Categorys',
-          provider.categories
-              .map((category) => category["name"]! as String)
-              .toList(),
-          selectedMachineName,
-          (value) => setState(() => selectedMachineName = value),
-        );
+        return null;
       },
     );
   }
 
-  Widget _buildMachineWaysCategoryDropdown() {
-    return _buildStyledDropdown(
-      'Select Machine SubCategorys',
-      ['Lathe Machine', 'Milling Machine', 'Drilling Machine'],
-      selectedMachineWaysCategory,
-      (value) => setState(() => selectedMachineWaysCategory = value),
+  Widget _buildMachine() {
+    return _buildStyledDropdowns(
+      'Select Main Machine',
+      machineList,
+      selectedMachine,
+      (String? name) async {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        if (name != null) {
+          MainMachineModel selected =
+              machineList.firstWhere((e) => e.name == name);
+          await prefs.setString('selectedMainMachineId', selected.id);
+          await prefs.setString('selectedMainMachineName', selected.name);
+          setState(() {
+            selectedMachine = name;
+            selectedMachineId = selected.id;
+            _powerConsumptionController.clear();
+            _powerCostController.clear();
+            _fuelCostController.clear();
+            categoryList.clear();
+            subcategoryList.clear();
+          });
+          if (kDebugMode) {
+            print(
+                "-----Main Machine Id-------${prefs.getString('selectedMainMachineId')}");
+          }
+          if (kDebugMode) {
+            print(
+                "-------Main Machine name--------${prefs.getString('selectedMainMachineName')}");
+          }
+          fetchCategoryData();
+        }
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Main machine selection is required';
+        }
+        return null;
+      },
     );
   }
 
-  Widget _buildStyledDropdown(String hint, List<String> options,
-      String? selectedValue, Function(String?) onChanged) {
+  Widget _buildMachineCate() {
+    return _buildStyledDropdownss(
+      'Select Machine Categories',
+      categoryList,
+      selectedCategory,
+      (String? name) async {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        if (name != null) {
+          MachineCatModel selected =
+              categoryList.firstWhere((e) => e.name == name);
+          await prefs.setString('selectedMachinecatId', selected.id);
+          await prefs.setString('selectedMachinecatName', selected.name);
+          setState(() {
+            selectedCategory = name; // Update UI
+            subcategoryList.clear();
+          });
+          // categoryList.clear();
+          if (kDebugMode) {
+            print(
+                "-----Machine categories Id-------${prefs.getString('selectedMachinecatId')}");
+          }
+          if (kDebugMode) {
+            print(
+                "-------Machine Categories Name--------${prefs.getString('selectedMainMachineName')}");
+          }
+          if (kDebugMode) {
+            print(
+                "-----Main---Machine Id--------${prefs.getString('selectedMainMachineId')}");
+          }
+          // subcategoryList.clear();
+          fetchSubCategories();
+          if (kDebugMode) {
+            print(
+                "Selected Machine cat id: ${prefs.getString('selectedMachinecatId')}");
+          }
+        }
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Machine categories selection is required';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildMachineSub() {
+    return _buildStyledDropdowne(
+      'Select Machine SubCategories',
+      subcategoryList,
+      selectedSubCategory,
+      (String? name) async {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        if (name != null) {
+          MachineSubCatModel selected =
+              subcategoryList.firstWhere((e) => e.name == name);
+          await prefs.setString('selectedMachinesubcatId', selected.id);
+          await prefs.setString('selectedMachinesubcatName', selected.name);
+          setState(() {
+            selectedSubCategory = name; // Update UI
+          });
+          if (kDebugMode) {
+            print(selected.id);
+          }
+          if (kDebugMode) {
+            print(selected.name);
+          }
+          if (kDebugMode) {
+            print(
+                "Selected Machine SubCategory ID: ${prefs.getString('selectedMachinecatId')}");
+          }
+        }
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Machine subcategories selection is required';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildStyledDropdown(String hint, List<CurrencyModel> options,
+      String? selectedValue, Function(String?) onChanged,
+      {required String? Function(dynamic value) validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: DropdownButtonFormField2<String>(
+      child: DropdownButtonFormField<String>(
         isExpanded: true,
         value: selectedValue,
+        validator: validator,
         decoration: InputDecoration(
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.blue, width: 2),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.blue, width: 2.0),
           ),
+          errorBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.grey, width: 2.0),
+          ),
+          focusedErrorBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.grey, width: 2.5),
+          ),
+          errorStyle: const TextStyle(color: Colors.red, fontSize: 14),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          suffixIcon: selectedValue != null
+          suffixIcon: selectedValue != null && selectedValue.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.close, color: Colors.red),
-                  onPressed: () {
-                    setState(() => onChanged(null));
+                  onPressed: () async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    await prefs.remove('selectedCurrency');
+                    await prefs.remove('selectedCurrencyId');
+                    await prefs.remove('selectedCurrencyAmountName');
+                    await prefs.remove('selectedCurrencyName');
+                    setState(() {
+                      selectedCurrency = null;
+                    });
+                    if (kDebugMode) {
+                      print("Currency selection cleared");
+                    }
                   },
                 )
-              : null, // Show clear button only if an option is selected
+              : null,
         ),
-        items: [
-          DropdownMenuItem<String>(
-            value: null, // Allows unselecting
-            child: Text(hint, style: const TextStyle(color: Colors.grey)),
-          ),
-          ...options.map((option) => DropdownMenuItem<String>(
-                value: option,
-                child: Text(option,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w500)),
-              ))
-        ],
+        items: options
+            .map((currency) => DropdownMenuItem<String>(
+                  value: "${currency.name} - ${currency.amount}",
+                  child: Text("${currency.name} - ${currency.amount}",
+                      style: const TextStyle(fontSize: 16)),
+                ))
+            .toList(),
         onChanged: onChanged,
-        validator: (value) => value == null ? 'Please select an option' : null,
-        hint: Text(hint, style: const TextStyle(fontSize: 16)),
-
-        /// Customization of Dropdown Menu
-        dropdownStyleData: DropdownStyleData(
-          maxHeight: 300,
-          width: 250,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.white,
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 5,
-                spreadRadius: 1,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-        ),
-        menuItemStyleData: const MenuItemStyleData(
-          height: 50,
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        ),
+        hint: Text(hint,
+            style: const TextStyle(fontSize: 16, color: Colors.grey)),
       ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller,
-      TextInputType inputType, String? Function(String?) validator) {
+  Widget _buildStyledDropdowns(String hint, List<MainMachineModel> options,
+      String? selectedValue, Function(String?) onChanged,
+      {required String? Function(dynamic value) validator}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: DropdownButtonFormField<String>(
+        isExpanded: true,
+        value: selectedValue,
+        validator: validator,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.blue, width: 2.0),
+          ),
+          errorBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.grey, width: 2.0),
+          ),
+          focusedErrorBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.grey, width: 2.5),
+          ),
+          errorStyle: const TextStyle(color: Colors.red, fontSize: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          suffixIcon: selectedValue != null && selectedValue.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.close, color: Colors.red),
+                  onPressed: () async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    await prefs.remove('selectedMainMachineId');
+                    await prefs.remove('selectedMainMachineName');
+                    await prefs.remove('selectedCategoryId');
+                    await prefs.remove('selectedCategoryName');
+                    await prefs.remove('selectedSubCategoryId');
+                    await prefs.remove('selectedSubCategoryName');
+                    setState(() {
+                      selectedMachine = null;
+                      selectedMachineId = null;
+                      selectedCategory = null;
+                      selectedSubCategory = null;
+                      _powerConsumptionController.clear();
+                      _powerCostController.clear();
+                      _fuelCostController.clear();
+                      categoryList.clear();
+                      subcategoryList.clear();
+                    });
+
+                    if (kDebugMode) {
+                      print("Main Machine selection cleared");
+                    }
+                  },
+                )
+              : null,
+        ),
+        items: options
+            .map((machine) => DropdownMenuItem<String>(
+                  value: machine.name,
+                  child:
+                      Text(machine.name, style: const TextStyle(fontSize: 16)),
+                ))
+            .toList(),
+        onChanged: onChanged,
+        hint: Text(hint,
+            style: const TextStyle(fontSize: 16, color: Colors.grey)),
+      ),
+    );
+  }
+
+  Widget _buildStyledDropdownss(String hint, List<MachineCatModel> options,
+      String? selectedValue, Function(String?) onChanged,
+      {required String? Function(dynamic value) validator}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: DropdownButtonFormField<String>(
+        isExpanded: true,
+        value: selectedValue,
+        validator: validator,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.blue, width: 2.0),
+          ),
+          errorBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.grey, width: 2.0),
+          ),
+          focusedErrorBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.grey, width: 2.5),
+          ),
+          errorStyle: const TextStyle(color: Colors.red, fontSize: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          suffixIcon: selectedValue != null && selectedValue.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.close, color: Colors.red),
+                  onPressed: () async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    await prefs.remove('selectedMachinecatId');
+                    await prefs.remove('selectedMachinecatName');
+                    await prefs.remove('selectedSubCategoryId');
+                    await prefs.remove('selectedSubCategoryName');
+                    setState(() {
+                      selectedCategory = null;
+                      selectedSubCategory = null;
+                      subcategoryList.clear();
+                    });
+                    if (kDebugMode) {
+                      print("Categories selection cleared");
+                    }
+                  },
+                )
+              : null,
+        ),
+        items: options
+            .map((machines) => DropdownMenuItem<String>(
+                  value: machines.name,
+                  child:
+                      Text(machines.name, style: const TextStyle(fontSize: 16)),
+                ))
+            .toList(),
+        onChanged: onChanged,
+        hint: Text(hint,
+            style: const TextStyle(fontSize: 16, color: Colors.grey)),
+      ),
+    );
+  }
+
+  Widget _buildStyledDropdowne(String hint, List<MachineSubCatModel> options,
+      String? selectedValue, Function(String?) onChanged,
+      {required String? Function(dynamic value) validator}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: DropdownButtonFormField<String>(
+        isExpanded: true,
+        value: selectedValue,
+        validator: validator,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.blue, width: 2.0),
+          ),
+          errorBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.grey, width: 2.0),
+          ),
+          focusedErrorBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.grey, width: 2.5),
+          ),
+          errorStyle: const TextStyle(color: Colors.red, fontSize: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          suffixIcon: selectedValue != null && selectedValue.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.close, color: Colors.red),
+                  onPressed: () async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    await prefs.remove('selectedMachinesubcatId');
+                    await prefs.remove('selectedMachinesubcatName');
+                    setState(() {
+                      selectedSubCategory = null;
+                    });
+                    if (kDebugMode) {
+                      print("SubCategories selection cleared");
+                    }
+                  },
+                )
+              : null,
+        ),
+        items: options
+            .map((subcat) => DropdownMenuItem<String>(
+                  value: subcat.name,
+                  child:
+                      Text(subcat.name, style: const TextStyle(fontSize: 16)),
+                ))
+            .toList(),
+        onChanged: onChanged,
+        hint: Text(hint,
+            style: const TextStyle(fontSize: 16, color: Colors.grey)),
+      ),
+    );
+  }
+
+  Widget _buildTextField(String labelText, TextEditingController controller,
+      TextInputType keyboardType, String? Function(String?) validator) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
       child: TextFormField(
         controller: controller,
-        keyboardType: inputType,
+        keyboardType: keyboardType,
+        cursorColor: Colors.blue,
+        cursorErrorColor: Colors.blue,
+        validator: validator,
+        onChanged: (value) {
+          if (value.isNotEmpty && double.tryParse(value) != null) {
+            if (double.parse(value) < 0) {
+              controller.text = '0';
+              controller.selection = TextSelection.fromPosition(
+                TextPosition(offset: controller.text.length),
+              );
+            }
+          }
+        },
         decoration: InputDecoration(
-          labelText: label,
+          labelText: labelText,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.blue, width: 2.0),
+          ),
+          errorBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.grey, width: 2.0),
+          ),
+          focusedErrorBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            borderSide: BorderSide(color: Colors.blue, width: 2.5),
+          ),
+          errorStyle: const TextStyle(color: Colors.red, fontSize: 14),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
-        validator: validator,
       ),
     );
   }
 
-  void _calculateMHR() {
+  void _calculateMHR() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MHRCalculatorScreen()),
-      );
+      final provider = Provider.of<CalculationProvider>(context, listen: false);
+      String? selectedMainCatId = prefs.getString('selectedMainMachineId');
+      Map<String, dynamic> requestData = {
+        "main_cat_id": selectedMainCatId,
+        "maintanance_cost": _maintenanceCostController.text.isNotEmpty
+            ? _maintenanceCostController.text
+            : '0',
+        "machine_purchase_price": _machinePriceController.text.isNotEmpty
+            ? _machinePriceController.text
+            : '0',
+        "machine_life": _machineLifeController.text.isNotEmpty
+            ? _machineLifeController.text
+            : '0',
+        "salvage_value": _salvageValueController.text.isNotEmpty
+            ? _salvageValueController.text
+            : '0',
+        "operator_wage": _operatorWageController.text.isNotEmpty
+            ? _operatorWageController.text
+            : '0',
+        "consumable_cost": _consumableCostController.text.isNotEmpty
+            ? _consumableCostController.text
+            : '0',
+        "factory_rent": _factoryRentController.text.isNotEmpty
+            ? _factoryRentController.text
+            : '0',
+        "operating_hours": _operatingHoursController.text.isNotEmpty
+            ? _operatingHoursController.text
+            : '0',
+        "working_days": _workingDaysController.text.isNotEmpty
+            ? _workingDaysController.text
+            : '0',
+      };
+      if (selectedMainCatId == '1') {
+        // Category 1 fields
+        requestData["currency_id"] = prefs.getString('selectedCurrencyId');
+        requestData["power_consumption"] =
+            _powerConsumptionController.text.isNotEmpty
+                ? _powerConsumptionController.text
+                : '0';
+        requestData["power_cost"] = _powerCostController.text.isNotEmpty
+            ? _powerCostController.text
+            : '0';
+      } else if (selectedMainCatId == '2') {
+        requestData["currency_id"] = prefs.getString('selectedCurrencyId');
+        // Category 2 fields
+        requestData["fuel_cost_per_hour"] = _fuelCostController.text.isNotEmpty
+            ? _fuelCostController.text
+            : '0';
+      }
+
+      //  Print data
+      if (kDebugMode) {
+        print("Request Data: $requestData");
+      }
+
+      // Save input values
+      requestData.forEach((key, value) async {
+        await prefs.setString(key, value.toString());
+      });
+
+      try {
+        await provider.calculateMHR(requestData);
+        if (provider.calculationResult != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MHRCalculatorScreen(),
+            ),
+          );
+        } else {
+          if (kDebugMode) {
+            print("Calculation resulted in null.");
+          }
+        }
+      } catch (error) {
+        if (kDebugMode) {
+          print("Error fetching calculation: $error");
+        }
+      }
     }
   }
 }

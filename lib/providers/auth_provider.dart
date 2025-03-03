@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:machine_hour_rate/core/services/auth_service.dart';
+import 'package:machine_hour_rate/models/userModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -14,8 +15,11 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   Map<String, String>? get validationErrors => _validationErrors;
 
-  Map<String, dynamic>? _userData;
-  Map<String, dynamic>? get userData => _userData;
+  UserModel? _userData;
+  UserModel? get userData => _userData;
+
+  // Details? _userData;
+  // Details? get userData => _userData;
 
   Future<String?> registerUser({
     required String firstName,
@@ -101,46 +105,40 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     if (response["success"]) {
-      // Save user data locally
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString("user_data", jsonEncode(response["details"]));
-
-      _userData = response["details"];
-      notifyListeners();
+      if (response["details"] != null) {
+        _userData = UserModel.fromJson(response["details"]);
+        // You might want to print the UserModel here for debugging
+        if (kDebugMode) {
+          print("User Data: ${_userData?.toJson()}");
+        }
+        print("---------------------------jhg---------$response");
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString("user_data", jsonEncode(response["details"]));
+        notifyListeners();
+        return response["message"];
+      } else {
+        if (kDebugMode) {
+          print("User details are null.");
+        }
+        return "User details couldn't be fetched. Please try again.";
+      }
+      // _userData = Details.fromJson(response["details"]);
+      // SharedPreferences prefs = await SharedPreferences.getInstance();
+      // await prefs.setString("user_data", jsonEncode(response["details"]));
+      // notifyListeners();
+      // return response["message"];
     } else {
       _validationErrors = response["errors"]?.cast<String, String>();
       notifyListeners();
+      return response["message"];
     }
-    return null;
+    // return null;
   }
 
   Future<void> logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove("user_data");
     _userData = null;
-    notifyListeners();
-  }
-
-  List<Map<String, dynamic>> _categories = [];
-
-  List<Map<String, dynamic>> get categories => _categories;
-
-  Future<void> loadCategories() async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      final service = AuthService();
-      _categories = await service.fetchCategories();
-
-      // Store in SharedPreferences
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString("categories", _categories.toString());
-    } catch (e) {
-      print("Error: $e");
-    }
-
-    _isLoading = false;
     notifyListeners();
   }
 }

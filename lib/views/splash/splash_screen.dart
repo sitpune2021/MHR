@@ -80,50 +80,51 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Text(
-                        'MACHINE HOUR RATE',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          foreground: Paint()
-                            ..shader = const LinearGradient(
-                              // begin: Alignment.bottomCenter,
-                              // end: Alignment.topCenter,
-                              colors: [
-                                Color(0xFF207AC5),
-                                Color(0xFF9DC558),
-                                Color(0xFF44B264),
-                                // Blue
-                              ],
-                            ).createShader(
-                                const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Efficiently calculate',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.normal,
-                          // color: Colors.lightBlue,
-                        ),
-                      ),
-                      const Text(
-                        'Machine Hour Rates',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w500,
-                          // color: Colors.lightBlue,
-                        ),
-                      ),
-                      const Text(
-                        'with Precision',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.normal,
-                          // color: Colors.lightBlue,
-                        ),
-                      ),
+                      Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'MACHINE HOUR RATE',
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                foreground: Paint()
+                                  ..shader = const LinearGradient(
+                                    colors: [
+                                      Color(0xFF207AC5),
+                                      Color(0xFF9DC558),
+                                      Color(0xFF44B264),
+                                    ],
+                                  ).createShader(const Rect.fromLTWH(
+                                      0.0, 0.0, 200.0, 70.0)),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'Efficiently calculate',
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.normal,
+                                // color: Colors.lightBlue,
+                              ),
+                            ),
+                            const Text(
+                              'Machine Hour Rates',
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w500,
+                                // color: Colors.lightBlue,
+                              ),
+                            ),
+                            const Text(
+                              'with Precision',
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.normal,
+                                // color: Colors.lightBlue,
+                              ),
+                            ),
+                          ]),
                     ],
                   ),
                 )
