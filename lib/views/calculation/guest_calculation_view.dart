@@ -1,24 +1,15 @@
 // ignore_for_file: library_prefixes, deprecated_member_use, use_build_context_synchronously
 
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:machine_hour_rate/core/db/database_helper.dart';
 import 'package:machine_hour_rate/core/theme/colors.dart';
-import 'package:machine_hour_rate/models/calculationlistModel.dart';
 import 'package:machine_hour_rate/models/mainmachineModel.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pdfLib;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:pie_chart/pie_chart.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
-class MHRCalculatorsScreen extends StatefulWidget {
-  final String viewid;
-  MHRCalculatorsScreen({super.key, required this.viewid});
+class MHRGuestCalculatorsScreen extends StatefulWidget {
+  final int viewid;
+  MHRGuestCalculatorsScreen({super.key, required this.viewid});
 
   final Map<String, double> dataMap = {
     "Flutter": 40,
@@ -35,23 +26,24 @@ class MHRCalculatorsScreen extends StatefulWidget {
   ];
 
   @override
-  State<MHRCalculatorsScreen> createState() => _MHRCalculatorsScreenState();
+  State<MHRGuestCalculatorsScreen> createState() =>
+      _MHRGuestCalculatorsScreenState();
 }
 
-class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
+class _MHRGuestCalculatorsScreenState extends State<MHRGuestCalculatorsScreen> {
   String? machineHourRate;
   get dataMap => null;
   MainMachineModel? selectedMachineId;
   get colorList => null;
   Timer? _timer;
-  CalculationListModel? currentCalculation;
   bool isLoading = true;
-  List<CalculationListModel> calculationss = [];
+  List<Map<String, dynamic>> calculations = [];
+  Map<String, dynamic>? currentCalculation;
 
   @override
   void initState() {
     super.initState();
-    fetchCalculationsView();
+    fetchCalculation();
     _startAutoRefresh();
   }
 
@@ -64,257 +56,91 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
   void _startAutoRefresh() {
     _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted) {
-        fetchCalculationsView();
+        fetchCalculation();
       } else {
         timer.cancel();
       }
     });
   }
 
-  // calculation list
-  // Future<void> fetchCalculationsView({String? userId}) async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   final url = Uri.parse("http://mhr.sitsolutions.co.in/view_calculation");
-  //   var userid = prefs.getString("user_id");
-  //   print("--------------------------------------viewid ${widget.viewid}");
-  //   try {
-  //     final response = await http.post(
-  //       url,
-  //       headers: {"Content-Type": "application/json"},
-  //       body: jsonEncode({
-  //         "user_id": userid,
-  //         "id": widget.viewid,
-  //       }),
-  //     );
+  void fetchCalculation() async {
+    setState(() {
+      isLoading = true;
+    });
+    int calculationId = int.tryParse(widget.viewid.toString()) ?? 2;
+    print(calculationId);
+    DatabaseHelper dbHelper = DatabaseHelper();
+    Map<String, dynamic>? calculation =
+        await dbHelper.getCalculationById(calculationId);
 
-  //     if (kDebugMode) {
-  //       print("Fetch Response Status Code: ${response.statusCode}");
-  //     }
-  //     if (response.statusCode == 200) {
-  //       final jsonData = json.decode(response.body);
-  //       if (jsonData["status"] == "success") {
-  //         List<Map<String, dynamic>> details = jsonData["details"];
-  //         print("--------------calcution view data-----------$jsonData");
-  //         print("--------------calcution details-----------$details");
+    setState(() {
+      currentCalculation = calculation;
+      isLoading = false;
+    });
 
-  //         List<CalculationListModel> fetchedCalculations = details
-  //             .map((item) => CalculationListModel.fromJson(item))
-  //             .toList();
-
-  //         if (mounted) {
-  //           setState(() {
-  //             calculationss = fetchedCalculations;
-  //             isLoading = false;
-  //             currentCalculation =
-  //                 calculationss.isNotEmpty ? calculationss[0] : null;
-  //           });
-
-  //           if (kDebugMode) {
-  //             print("Updated calculations count: ${calculationss.length}");
-  //           }
-  //         }
-  //       } else {
-  //         if (kDebugMode) {
-  //           print("Failed to load calculations: ${jsonData['message']}");
-  //         }
-  //       }
-  //     } else {
-  //       if (kDebugMode) {
-  //         print("Failed to load data, status code: ${response.statusCode}");
-  //       }
-  //     }
-  //   } catch (e) {
-  //     if (mounted) {
-  //       setState(() {
-  //         isLoading = false; // Stop loading
-  //       });
-  //     }
-  //     if (kDebugMode) {
-  //       print("Error fetching calculations: $e");
-  //     }
-  //   }
-  // }
-
-  Future<void> fetchCalculationsView({String? userId}) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final url = Uri.parse("http://mhr.sitsolutions.co.in/view_calculation");
-    var userid = prefs.getString("user_id");
-
-    print("--------------------------------------viewid ${widget.viewid}");
-    try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "user_id": userid,
-          "id": widget.viewid,
-        }),
-      );
-
-      if (kDebugMode) {
-        print("Fetch Response Status Code: ${response.statusCode}");
-      }
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-
-        if (jsonData["status"] == "success") {
-          Map<String, dynamic> details =
-              jsonData["details"]; // FIXED: Use Map instead of List
-
-          print("--------------Calculation view data-----------$jsonData");
-          print("--------------Calculation details-----------$details");
-
-          CalculationListModel fetchedCalculation =
-              CalculationListModel.fromJson(details);
-
-          if (mounted) {
-            setState(() {
-              calculationss = [fetchedCalculation]; // Wrap in a list if needed
-              isLoading = false;
-              currentCalculation = fetchedCalculation;
-            });
-
-            if (kDebugMode) {
-              print("Updated calculations count: ${calculationss.length}");
-            }
-          }
-        } else {
-          if (kDebugMode) {
-            print("Failed to load calculations: ${jsonData['message']}");
-          }
-        }
-      } else {
-        if (kDebugMode) {
-          print("Failed to load data, status code: ${response.statusCode}");
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          isLoading = false; // Stop loading
-        });
-      }
-      if (kDebugMode) {
-        print("Error fetching calculations: $e");
-      }
+    if (calculation == null) {
+      print("No calculation found for ID $calculationId");
     }
   }
 
-  Future<void> _downloadPDF(BuildContext context, dynamic result) async {
-    if (currentCalculation!.machineHourRate == null ||
-        currentCalculation!.machineHourRate!.isEmpty) {
-      _showMessage(context, "Machine Hour Rate is empty!");
-      return;
-    }
+  Widget buildRow(String label, String? value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16)),
+        Text(": ${value ?? 'N/A'}", style: const TextStyle(fontSize: 16)),
+      ],
+    );
+  }
 
-    if (!await _requestStoragePermission()) {
-      return; // Permission denied
-    }
-
-    // Get external storage directory (Scoped Storage)
-    Directory? directory = await getExternalStorageDirectory();
-    if (directory == null) {
-      _showMessage(context, "Unable to find storage directory!");
-      return;
-    }
-
-    // Use Downloads directory instead
-    String documentsPath =
-        "/storage/emulated/0/Download"; // Standard Downloads folder
-    String filePath = "$documentsPath/machine_hour_rate.pdf";
-
-    final pdf = pdfLib.Document();
-    pdf.addPage(
-      pdfLib.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (pdfLib.Context context) => pdfLib.Center(
-          child: pdfLib.Column(
-            mainAxisAlignment: pdfLib.MainAxisAlignment.start,
-            children: [
-              pdfLib.Text("Machine Hour Rate Overview",
-                  style: const pdfLib.TextStyle(fontSize: 24)),
-              pdfLib.SizedBox(height: 20),
-              //calculation
-              pdfLib.Text(
-                  "Machine Hour Rate: ${currentCalculation!.machineHourRate}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Depreciation: ${result.depreciation}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Power Cost: ${result.powerCost}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Operator Wages: ${result.operatorWages}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Total Cost Per Year: ${result.totalCostPerYear}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Total Working Hours: ${result.totalWorkingHours}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // inpute
-              // pdfLib.Text(
-              //     "Maintenance Cost: ${storedValues['maintanance_cost']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text(
-              //     "Machine Purchase Price: ${storedValues['machine_purchase_price']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Machine Life: ${storedValues['machine_life']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Salvage Value: ${storedValues['salvage_value']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text(
-              //     "Power Consumption: ${storedValues['power_consumption'] ?? '0'}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Power Cost: ${storedValues['power_cost'] ?? '0'}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text(
-              //     "Fuel Cost: ${storedValues['fuel_cost_per_hour'] ?? '0'}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Operator Wage: ${storedValues['operator_wage']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Consumable Cost: ${storedValues['consumable_cost']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Factory Rent: ${storedValues['factory_rent']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Operating Hours: ${storedValues['operating_hours']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Working Days: ${storedValues['working_days']}",
-              // style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.SizedBox(height: 10),
-              pdfLib.Text("Generated on: ${DateTime.now()}"),
-            ],
-          ),
+  Widget buildCalculationView() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text("VIEW",
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  color: Colors.lightBlueAccent,
+                  borderRadius: BorderRadius.circular(12)),
+              child: Column(
+                children: [
+                  Text(currentCalculation!["machine_hour_rate"] ?? "N/A",
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold)),
+                  const Text("Machine Hour Rate",
+                      style: TextStyle(fontSize: 16)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(10)),
+              child: Column(
+                children: [
+                  buildRow("Depreciation", currentCalculation!["depreciation"]),
+                  buildRow("Power Cost", currentCalculation!["powerCost"]),
+                  buildRow(
+                      "Operator Wages", currentCalculation!["operatorWages"]),
+                  buildRow("Total Cost Per Year",
+                      currentCalculation!["totalCostPerYear"]),
+                  buildRow("Total Working Hours",
+                      currentCalculation!["totalWorkingHours"]),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
-
-    await _savePDF(context, pdf, filePath);
-  }
-
-  Future<void> _savePDF(
-      BuildContext context, pdfLib.Document pdf, String filePath) async {
-    try {
-      final file = File(filePath);
-      await file.writeAsBytes(await pdf.save());
-      _showMessage(context, "PDF saved at $filePath");
-    } catch (e) {
-      _showMessage(context, "Failed to save PDF: $e");
-    }
-  }
-
-  Future<bool> _requestStoragePermission() async {
-    if (Platform.isAndroid) {
-      var status = await Permission.storage.request();
-
-      if (status.isGranted) return true;
-
-      if (await Permission.manageExternalStorage.isGranted) return true;
-
-      return false;
-    }
-    return true;
-  }
-
-  void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -370,7 +196,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
-                                      "${currentCalculation!.machineHourRate?.toString()}",
+                                      "${currentCalculation!["machine_hour_rate"]?.toString()}",
                                       style: const TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.bold)),
@@ -407,7 +233,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                         ),
                                       ),
                                       Text(
-                                        ": ${currentCalculation!.depreciation?.toString()}",
+                                        ": ${currentCalculation!["depreciation"]?.toString()}",
                                         style: const TextStyle(
                                           fontSize: 16,
                                         ),
@@ -425,7 +251,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                         ),
                                       ),
                                       Text(
-                                        ": ${currentCalculation!.powerCost?.toString()}",
+                                        ": ${currentCalculation!["power_cost"]?.toString()}",
                                         style: const TextStyle(
                                           fontSize: 16,
                                         ),
@@ -441,7 +267,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                         style: TextStyle(fontSize: 16),
                                       ),
                                       Text(
-                                        ": ${currentCalculation!.operatorWages?.toString()}",
+                                        ": ${currentCalculation!["operator_wages"]?.toString()}",
                                         style: const TextStyle(fontSize: 16),
                                       ),
                                     ],
@@ -455,7 +281,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                         style: TextStyle(fontSize: 16),
                                       ),
                                       Text(
-                                        ": ${currentCalculation!.totalCostPerYear?.toString()}",
+                                        ": ${currentCalculation!["total_cost_per_year"]?.toString()}",
                                         style: const TextStyle(fontSize: 16),
                                       ),
                                     ],
@@ -469,7 +295,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                         style: TextStyle(fontSize: 16),
                                       ),
                                       Text(
-                                        ": ${currentCalculation!.totalWorkingHours?.toString()}",
+                                        ": ${currentCalculation!["total_working_hours"]?.toString()}",
                                         style: const TextStyle(fontSize: 16),
                                       ),
                                     ],
@@ -510,7 +336,8 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                               children: [
                                 const Text("Maintenance Cost",
                                     style: TextStyle(fontSize: 16)),
-                                Text(": ${currentCalculation!.maintananceCost}",
+                                Text(
+                                    ": ${currentCalculation!["maintanance_cost"]}",
                                     style: const TextStyle(fontSize: 16)),
                               ],
                             ),
@@ -520,7 +347,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                 const Text("Machine Purchase Price",
                                     style: TextStyle(fontSize: 16)),
                                 Text(
-                                    ": ${currentCalculation!.machinePurchasePrice}",
+                                    ": ${currentCalculation!["machine_purchase_price"]}",
                                     style: const TextStyle(fontSize: 16)),
                               ],
                             ),
@@ -529,7 +356,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                               children: [
                                 const Text("Machine Life",
                                     style: TextStyle(fontSize: 16)),
-                                Text(": ${currentCalculation!.machineLife}",
+                                Text(": ${currentCalculation!["machine_life"]}",
                                     style: const TextStyle(fontSize: 16)),
                               ],
                             ),
@@ -538,11 +365,12 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                               children: [
                                 const Text("Salvage Value",
                                     style: TextStyle(fontSize: 16)),
-                                Text(": ${currentCalculation!.salvageValue}",
+                                Text(
+                                    ": ${currentCalculation!["salvage_value"]}",
                                     style: const TextStyle(fontSize: 16)),
                               ],
                             ),
-                            if (currentCalculation!.mainCatId == '1') ...[
+                            if (currentCalculation!["main_cat_id"] == '1') ...[
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -552,7 +380,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                     style: TextStyle(fontSize: 16),
                                   ),
                                   Text(
-                                    ": ${currentCalculation!.powerConsumption}",
+                                    ": ${currentCalculation!["power_consumption"]}",
                                     style: const TextStyle(fontSize: 16),
                                   )
                                 ],
@@ -566,13 +394,13 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                     style: TextStyle(fontSize: 16),
                                   ),
                                   Text(
-                                    ": ${currentCalculation!.powerCostPerUnit}",
+                                    ": ${currentCalculation!["power_cost_per_unit"]}",
                                     style: const TextStyle(fontSize: 16),
                                   ),
                                 ],
                               ),
                             ],
-                            if (currentCalculation!.mainCatId == '2') ...[
+                            if (currentCalculation!["main_cat_id"] == '2') ...[
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -582,7 +410,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                     style: TextStyle(fontSize: 16),
                                   ),
                                   Text(
-                                    ": ${currentCalculation!.fuelCostPerHour}",
+                                    ": ${currentCalculation!["fuel_cost_per_hour"]}",
                                     style: const TextStyle(fontSize: 16),
                                   ),
                                 ],
@@ -593,7 +421,8 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                               children: [
                                 const Text("Operator Wage",
                                     style: TextStyle(fontSize: 16)),
-                                Text(": ${currentCalculation!.operatorWage}",
+                                Text(
+                                    ": ${currentCalculation!["operator_wage"]}",
                                     style: const TextStyle(fontSize: 16)),
                               ],
                             ),
@@ -602,7 +431,8 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                               children: [
                                 const Text("Consumable Cost",
                                     style: TextStyle(fontSize: 16)),
-                                Text(": ${currentCalculation!.consumableCost}",
+                                Text(
+                                    ": ${currentCalculation!["consumable_cost"]}",
                                     style: const TextStyle(fontSize: 16)),
                               ],
                             ),
@@ -611,7 +441,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                               children: [
                                 const Text("Factory Rent",
                                     style: TextStyle(fontSize: 16)),
-                                Text(": ${currentCalculation!.factoryRent}",
+                                Text(": ${currentCalculation!["factory_rent"]}",
                                     style: const TextStyle(fontSize: 16)),
                               ],
                             ),
@@ -620,7 +450,8 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                               children: [
                                 const Text("Operating Hours",
                                     style: TextStyle(fontSize: 16)),
-                                Text(": ${currentCalculation!.operatingHours}",
+                                Text(
+                                    ": ${currentCalculation!["operating_hours"]}",
                                     style: const TextStyle(fontSize: 16)),
                               ],
                             ),
@@ -629,7 +460,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                               children: [
                                 const Text("Working Days",
                                     style: TextStyle(fontSize: 16)),
-                                Text(": ${currentCalculation!.workingDays}",
+                                Text(": ${currentCalculation!["working_days"]}",
                                     style: const TextStyle(fontSize: 16)),
                               ],
                             ),
@@ -660,8 +491,9 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                                             BorderRadius.circular(20.0),
                                       ),
                                     ),
-                                    onPressed: () => _downloadPDF(
-                                        context, currentCalculation),
+                                    onPressed: () {},
+                                    //  => _downloadPDF(
+                                    //     context, currentCalculation),
                                     icon: const Icon(Icons.download),
                                     label: const Text("Download"),
                                   ),

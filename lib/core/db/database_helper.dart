@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -53,13 +54,26 @@ class DatabaseHelper {
 
   Future<int> insertCalculation(Map<String, dynamic> data) async {
     final db = await database;
-    print("----------database data $data");
+    if (kDebugMode) {
+      print("----------database data $data");
+    }
     return await db.insert('calculations', data);
   }
 
   Future<List<Map<String, dynamic>>> getCalculations() async {
     final db = await database;
     return await db.query('calculations');
+  }
+
+  Future<Map<String, dynamic>?> getCalculationById(int id) async {
+    final db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'calculations',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    return result.isNotEmpty ? result.first : null;
   }
 
   Future<int> deleteCalculation(int id) async {

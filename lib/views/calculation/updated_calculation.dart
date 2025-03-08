@@ -14,9 +14,11 @@ import 'package:pdf/widgets.dart' as pdfLib;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MHRCalScreen extends StatefulWidget {
-  MHRCalScreen({super.key});
+  final String viewid;
+  MHRCalScreen({required this.viewid, super.key});
 
   final Map<String, double> dataMap = {
     "Flutter": 40,
@@ -49,7 +51,7 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
   @override
   void initState() {
     super.initState();
-    fetchCalculations();
+    fetchCalculationsViews();
     _startAutoRefresh();
   }
 
@@ -62,36 +64,100 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
   void _startAutoRefresh() {
     _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted) {
-        fetchCalculations();
+        fetchCalculationsViews();
       } else {
         timer.cancel();
       }
     });
   }
 
-  // calculation list
-  Future<void> fetchCalculations() async {
-    final url = Uri.parse("https://mhr.sitsolutions.co.in/calculation_list");
+  // // calculation list
+  // Future<void> fetchCalculations() async {
+  //   final url = Uri.parse("https://mhr.sitsolutions.co.in/calculation_list");
+  //   try {
+  //     final response = await http.get(url);
+
+  //     if (kDebugMode) {
+  //       print("Fetch Response Status Code: ${response.statusCode}");
+  //     }
+  //     if (response.statusCode == 200) {
+  //       final jsonData = json.decode(response.body);
+  //       if (jsonData["status"] == "success") {
+  //         List<dynamic> details = jsonData["details"];
+  //         List<CalculationListModel> fetchedCalculations = details
+  //             .map((item) => CalculationListModel.fromJson(item))
+  //             .toList();
+
+  //         if (mounted) {
+  //           setState(() {
+  //             calculationss = fetchedCalculations;
+  //             isLoading = false;
+  //             currentCalculation =
+  //                 calculationss.isNotEmpty ? calculationss[0] : null;
+  //           });
+
+  //           if (kDebugMode) {
+  //             print("Updated calculations count: ${calculationss.length}");
+  //           }
+  //         }
+  //       } else {
+  //         if (kDebugMode) {
+  //           print("Failed to load calculations: ${jsonData['message']}");
+  //         }
+  //       }
+  //     } else {
+  //       if (kDebugMode) {
+  //         print("Failed to load data, status code: ${response.statusCode}");
+  //       }
+  //     }
+  //   } catch (e) {
+  //     if (mounted) {
+  //       setState(() {
+  //         isLoading = false; // Stop loading
+  //       });
+  //     }
+  //     if (kDebugMode) {
+  //       print("Error fetching calculations: $e");
+  //     }
+  //   }
+  // }
+
+  Future<void> fetchCalculationsViews({String? userId}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final url = Uri.parse("http://mhr.sitsolutions.co.in/view_calculation");
+    var userid = prefs.getString("user_id");
+    print("--------------------------------------viewid ${widget.viewid}");
     try {
-      final response = await http.get(url);
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "user_id": userid,
+          "id": widget.viewid,
+        }),
+      );
 
       if (kDebugMode) {
         print("Fetch Response Status Code: ${response.statusCode}");
       }
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+
         if (jsonData["status"] == "success") {
-          List<dynamic> details = jsonData["details"];
-          List<CalculationListModel> fetchedCalculations = details
-              .map((item) => CalculationListModel.fromJson(item))
-              .toList();
+          Map<String, dynamic> details =
+              jsonData["details"]; // FIXED: Use Map instead of List
+
+          print("--------------Calculation view data-----------$jsonData");
+          print("--------------Calculation details-----------$details");
+
+          CalculationListModel fetchedCalculation =
+              CalculationListModel.fromJson(details);
 
           if (mounted) {
             setState(() {
-              calculationss = fetchedCalculations;
+              calculationss = [fetchedCalculation]; // Wrap in a list if needed
               isLoading = false;
-              currentCalculation =
-                  calculationss.isNotEmpty ? calculationss[0] : null;
+              currentCalculation = fetchedCalculation;
             });
 
             if (kDebugMode) {

@@ -157,6 +157,7 @@ class AuthProvider extends ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove("user_data");
     await prefs.remove("isGuestUser");
+    await prefs.getBool("guest_user");
     await prefs.clear();
     _userData = null;
     notifyListeners();

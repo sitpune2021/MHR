@@ -483,10 +483,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   await fetchCalculations();
                 }
                 Navigator.pop(context);
+                var cal_id = calculation.id ?? '';
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => MHRCalScreen(),
+                    builder: (context) => MHRCalScreen(viewid: cal_id),
                   ),
                 );
               },
@@ -563,13 +564,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                 itemCount: calculations.length,
                                 itemBuilder: (context, index) {
                                   final calculation = calculations[index];
+                                  final cal_id = calculations[index].id;
+
                                   return InkWell(
                                     onTap: () {
+                                      print(
+                                          "-------------------calcution id-----------${cal_id}");
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) =>
-                                                MHRCalculatorsScreen()),
+                                                MHRCalculatorsScreen(
+                                                  viewid:
+                                                      cal_id ?? "", //----------
+                                                )),
                                       );
                                     },
                                     child: Card(

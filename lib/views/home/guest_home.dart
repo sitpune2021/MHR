@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:machine_hour_rate/views/calculation/guest_calculation_view.dart';
 import '../../core/db/database_helper.dart'; // Import your DatabaseHelper
 
 class GuestHome extends StatefulWidget {
@@ -47,47 +48,65 @@ class _GuestHomeState extends State<GuestHome> {
                           itemCount: calculations.length,
                           itemBuilder: (context, index) {
                             final calculation = calculations[index];
+                            final cal_id = calculations[index]["id"];
 
-                            return Card(
-                              color: Colors.grey[100],
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              elevation: 4,
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit,
-                                          color: Colors.blue),
-                                      onPressed: () {},
-                                    ),
-                                    Text(
-                                      "Calculation ${calculation['id']}",
-                                      style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        "${calculation['currency_id'] == '2' ? "*" : calculation['currency_id'] == '1' ? '\$' : ''} ${calculation['machine_hour_rate']}",
-                                        style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.green),
-                                        textAlign: TextAlign.center,
+                            return GestureDetector(
+                              onTap: () {
+                                print(
+                                    "-------------------calcution id-----------${cal_id}");
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          MHRGuestCalculatorsScreen(
+                                            viewid: cal_id ?? "", //----------
+                                          )),
+                                );
+                              },
+                              child: Card(
+                                color: Colors.grey[100],
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                elevation: 4,
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Colors.blue),
+                                        onPressed: () {},
                                       ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.close,
-                                          color: Colors.red),
-                                      onPressed: () {
-                                        _deleteCalculation(calculation['id']);
-                                      },
-                                    ),
-                                  ],
+                                      Text(
+                                        "Calculation ${calculation['id']}",
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          "${calculation['currency_id'] == '2' ? "*" : calculation['currency_id'] == '1' ? '\$' : ''} ${calculation['machine_hour_rate']}",
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.green),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.close,
+                                            color: Colors.red),
+                                        onPressed: () {
+                                          print(
+                                              "---------------------------${calculation['id']}");
+                                          _deleteCalculation(calculation['id']);
+                                        },
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );
