@@ -7,8 +7,6 @@ import 'package:machine_hour_rate/models/calculationModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  List<CalculationModel>? calculation;
-
 // user new register
   Future<Map<String, dynamic>> registerUser({
     required String firstName,
@@ -43,6 +41,22 @@ class AuthService {
         await prefs.setString("user_data", jsonEncode(responseData["details"]));
         return {"success": true, "message": responseData["message"]};
       } else {
+        if (responseData["message"] ==
+            "This mobile number is already registered.") {
+          return {
+            "success": false,
+            "message": responseData["message"],
+            "errors": {"mobile": "This mobile number is already registered."}
+          };
+        } else if (responseData["message"] ==
+                "This email is already registered." ||
+            responseData["details"]?['email'] != null) {
+          return {
+            "success": false,
+            "message": responseData["message"],
+            "errors": {"email": "This email is already registered."}
+          };
+        }
         return {
           "success": false,
           "message": responseData["message"],
@@ -79,7 +93,9 @@ class AuthService {
       );
       final responseData = jsonDecode(response.body);
       if (responseData["status"] == "success") {
-        print("------------when send otp---------$responseData");
+        if (kDebugMode) {
+          print("------------when send otp---------$responseData");
+        }
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString("user_data", jsonEncode(responseData["details"]));
         return {"success": true, "message": responseData["message"]};
@@ -128,7 +144,9 @@ class AuthService {
         headers: {"Content-Type": "application/json"},
       );
       final responseData = jsonDecode(response.body);
-      print("-----------Login Details-------------$responseData");
+      if (kDebugMode) {
+        print("-----------Login Details-------------$responseData");
+      }
       if (responseData["status"] == "success") {
         // Save user data locally
         SharedPreferences prefs = await SharedPreferences.getInstance();

@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:machine_hour_rate/models/userModel.dart';
@@ -10,6 +10,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 import 'package:machine_hour_rate/views/login/register_screen.dart';
 import 'package:machine_hour_rate/providers/auth_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,19 +27,38 @@ class _LoginScreenState extends State<LoginScreen> {
   int _remainingTime = 30;
   Timer? _timer;
 
+  UserModel? _userData;
+  UserModel? get userData => _userData;
+
   final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
+
+  // late final VoidCallback _mobileListener;
 
   @override
   void initState() {
     super.initState();
+    // _mobileListener = () {
+    //   final mobileNumber = _mobileController.text.trim();
+    //   setState(() {
+    //     // Enable the send OTP button only if the mobile number is valid
+    //     _isOtpSent = false; // Reset OTP sent status
+    //     _isResendEnabled = false; // Reset resend status
+    //     if (mobileNumber.length == 10) {
+    //       // if mobile number is valid
+    //       _isOtpSent = false; // Reset OTP sent status so user can send it again
+    //     }
+    //   });
+    // };
+
+    // // Add a listener to the mobile number controller
+    // _mobileController.addListener(_mobileListener);
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     _mobileController.dispose();
-    _otpController.dispose();
     super.dispose();
   }
 
@@ -69,7 +89,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Please enter a valid 10-digit mobile number.'),
-            // duration: Duration(seconds: 2),
           ),
         );
         return;
@@ -79,35 +98,43 @@ class _LoginScreenState extends State<LoginScreen> {
       String? result = await authProvider.loginUserOtp(
           mobile: _mobileController.text.trim());
       if (result != null) {
-        if (result.toLowerCase().contains("invalid mobile number") ||
-            result.toLowerCase().contains("not registered mobile number")) {
+        if (result.toLowerCase().contains("invalid") ||
+            result.toLowerCase().contains("not registered")) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                  'Number not registered, please register before you login.'),
-              backgroundColor: Colors.red,
+            SnackBar(
+              content: Text(result),
+              backgroundColor: (result.toLowerCase().contains("invalid"))
+                  ? Colors.grey
+                  : Colors.red,
             ),
           );
+          setState(() {
+            _isOtpSent = false;
+            _otpController.clear();
+          });
           return;
         }
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result ?? "Something went wrong"),
-          backgroundColor: (result!.toLowerCase().contains("success"))
-              ? Colors.red
-              : Colors.green,
-        ),
-      );
-      if (result.toLowerCase().contains("success") ||
+      if (result!.toLowerCase().contains("success") ||
           result.toLowerCase().contains("otp sent")) {
         _startTimer();
+        setState(() {
+          _isOtpSent = true;
+          // _otpController.clear();
+        });
       } else {
         setState(() {
           _isOtpSent = true;
           _startTimer();
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result),
+            backgroundColor: (result.toLowerCase().contains("success"))
+                ? Colors.red
+                : Colors.green,
+          ),
+        );
       }
     }
   }
@@ -120,7 +147,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('OTP must be 6 digits long.'),
-              duration: Duration(seconds: 2),
             ),
           );
           return;
@@ -131,6 +157,18 @@ class _LoginScreenState extends State<LoginScreen> {
         otp: _otpController.text.trim(),
       );
       if (errorMessage == null || errorMessage.isEmpty) {
+        await authProvider.loadUserData();
+        UserModel? userData = authProvider.userData;
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_id', "${userData?.id}");
+        if (kDebugMode) {
+          print('User ID...........................: ${userData?.id}');
+        }
+        var userId = prefs.getString('user_id');
+        if (kDebugMode) {
+          print('User IDs...........................: $userId');
+        }
         showLoginDialog(context);
       } else if (_isOtpSent &&
           (_otpController.text.isEmpty || _otpController.text.length != 6)) {
@@ -158,6 +196,13 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else if (errorMessage == "Validation failed") {
         showFailedDialog(context);
+      } else if (errorMessage.toLowerCase().contains("invalid otp")) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('The OTP provided is incorrect. Please try again.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
       } else {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(errorMessage.toString())));
@@ -168,6 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final validationErrors = authProvider.validationErrors;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(children: [
@@ -228,8 +274,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     labelText: "Mobile Number",
                     labelStyle: const TextStyle(color: Colors.black),
-                    hintText: "Enter mobile number",
-                    // errorText: validationErrors?['mobile'],
+                    // hintText: "Enter mobile number",
+                    errorText: validationErrors?['mobile'],
                     focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),
                       borderSide: BorderSide(color: Colors.blue, width: 2.0),
@@ -244,7 +290,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
+                    if (value == null || value.isEmpty || value.length != 10) {
                       return 'Enter your Registered mobile number';
                     } else if (value.length != 10) {
                       return 'Mobile number must be 10 digits';
@@ -260,7 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 SizedBox(
                   width: MediaQuery.sizeOf(context).width * 0.28,
-                  height: 40,
+                  height: MediaQuery.sizeOf(context).width * 0.10,
                   child: ElevatedButton(
                     onPressed: _isOtpSent ? null : _loginUserOtp,
                     style: ElevatedButton.styleFrom(
@@ -269,9 +315,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    child: Text(
-                      _isOtpSent ? "OTP Sent" : "Send OTP",
-                      style: const TextStyle(fontSize: 15, color: Colors.white),
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          _isOtpSent ? "OTP Sent" : "Send OTP",
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     ),
                   ),
                 ),

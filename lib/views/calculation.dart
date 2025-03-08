@@ -252,6 +252,38 @@ class _CalculationSheetState extends State<CalculationSheet> {
     }
   }
 
+//focus
+  final FocusNode _maintenanceCostFocusNode = FocusNode();
+  final FocusNode _machinePriceFocusNode = FocusNode();
+  final FocusNode _machineLifeFocusNode = FocusNode();
+  final FocusNode _salvageValueFocusNode = FocusNode();
+  final FocusNode _powerConsumptionFocusNode = FocusNode();
+  final FocusNode _powerCostFocusNode = FocusNode();
+  final FocusNode _operatorWageFocusNode = FocusNode();
+  final FocusNode _consumableCostFocusNode = FocusNode();
+  final FocusNode _factoryRentFocusNode = FocusNode();
+  final FocusNode _operatingHoursFocusNode = FocusNode();
+  final FocusNode _workingDaysFocusNode = FocusNode();
+  final FocusNode _fuelCostFocusNode = FocusNode();
+
+  // Make sure to dispose the FocusNodes
+  @override
+  void dispose() {
+    _maintenanceCostFocusNode.dispose();
+    _machinePriceFocusNode.dispose();
+    _machineLifeFocusNode.dispose();
+    _salvageValueFocusNode.dispose();
+    _powerConsumptionFocusNode.dispose();
+    _powerCostFocusNode.dispose();
+    _operatorWageFocusNode.dispose();
+    _consumableCostFocusNode.dispose();
+    _factoryRentFocusNode.dispose();
+    _operatingHoursFocusNode.dispose();
+    _workingDaysFocusNode.dispose();
+    _fuelCostFocusNode.dispose();
+    super.dispose();
+  }
+
   Future<void> _fetchData() async {
     fetchCurrencyData();
     fetchMachineData();
@@ -260,8 +292,33 @@ class _CalculationSheetState extends State<CalculationSheet> {
   }
 
   Future<void> _refreshData() async {
+    setState(() {
+      selectedCurrency = null;
+      selectedMachine = null;
+      selectedCategory = null;
+      selectedSubCategory = null;
+
+      _powerConsumptionController.clear();
+      _maintenanceCostController.clear();
+      _machinePriceController.clear();
+      _machineLifeController.clear();
+      _salvageValueController.clear();
+      _powerCostController.clear();
+      _operatorWageController.clear();
+      _consumableCostController.clear();
+      _factoryRentController.clear();
+      _operatingHoursController.clear();
+      _workingDaysController.clear();
+      _fuelCostController.clear();
+
+      currencyList.clear();
+      machineList.clear();
+      categoryList.clear();
+      subcategoryList.clear();
+
+      _formKey.currentState?.reset();
+    });
     await _fetchData();
-    setState(() {});
   }
 
   @override
@@ -269,6 +326,8 @@ class _CalculationSheetState extends State<CalculationSheet> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: RefreshIndicator(
+        color: kBackgroundColor,
+        backgroundColor: Colors.white,
         onRefresh: _refreshData,
         child: Column(
           children: [
@@ -288,73 +347,175 @@ class _CalculationSheetState extends State<CalculationSheet> {
                         const SizedBox(height: 10),
                         _buildCurrency(),
                         _buildMachine(),
-                        _buildMachineCate(),
-                        _buildMachineSub(),
+                        selectedMachine != null
+                            ? _buildMachineCate()
+                            : Container(),
+                        selectedCategory != null
+                            ? _buildMachineSub()
+                            : Container(),
+                        // _buildTextField(
+                        //     'Maintenance Cost per Year (MC) (Rs)',
+                        //     _maintenanceCostController,
+                        //     TextInputType.number,
+                        //     _validateInput,
+
+                        //     ),
+                        // _buildTextField(
+                        //     'Machine Purchase Price (MP) (Rs)',
+                        //     _machinePriceController,
+                        //     TextInputType.number,
+                        //     _validateInput),
+                        // _buildTextField(
+                        //     'Machine Life in Years (L) (Yrs)',
+                        //     _machineLifeController,
+                        //     TextInputType.number,
+                        //     _validateInput),
+                        // _buildTextField(
+                        //     'Salvage Value (S) (Rs)',
+                        //     _salvageValueController,
+                        //     TextInputType.number,
+                        //     _validateInput),
+                        // // Power Consumption & Power Cost only if selectedMachineId == 1
+                        // if (selectedMachineId == '1') ...[
+                        //   _buildTextField(
+                        //       'Power Consumption per Hour (PC) (Kw)',
+                        //       _powerConsumptionController,
+                        //       TextInputType.number,
+                        //       _validateInput),
+                        //   _buildTextField(
+                        //       'Power Cost per Unit (PU) (Rs)',
+                        //       _powerCostController,
+                        //       TextInputType.number,
+                        //       _validateInput),
+                        // ],
+                        // // Fuel Cost only if selectedMachineId == 2
+                        // if (selectedMachineId == '2')
+                        //   _buildTextField(
+                        //       'Fuel Cost (PH) (Rs)',
+                        //       _fuelCostController,
+                        //       TextInputType.number,
+                        //       _validateInput),
+                        // _buildTextField(
+                        //     'Operator Wage per Hour (OW) (Rs)',
+                        //     _operatorWageController,
+                        //     TextInputType.number,
+                        //     _validateInput),
+                        // _buildTextField(
+                        //     'Consumables Cost per Year (CC) (Rs)',
+                        //     _consumableCostController,
+                        //     TextInputType.number,
+                        //     _validateInput),
+                        // _buildTextField(
+                        //     'Factory Rent/Overheads per Year (RA) (Rs)',
+                        //     _factoryRentController,
+                        //     TextInputType.number,
+                        //     _validateInput),
+                        // _buildTextField(
+                        //     'Operating Hours per Day (H) (Hr)',
+                        //     _operatingHoursController,
+                        //     TextInputType.number,
+                        //     _validateInput),
+                        // _buildTextField(
+                        //     'Working Days per Year (D) (Days))',
+                        //     _workingDaysController,
+                        //     TextInputType.number,
+                        //     _validateInput),
                         _buildTextField(
-                            'Maintenance Cost per Year (MC) (Rs)',
-                            _maintenanceCostController,
-                            TextInputType.number,
-                            _validateInput),
+                          'Maintenance Cost per Year (MC) (Rs)',
+                          _maintenanceCostController,
+                          TextInputType.number,
+                          _validateInput,
+                          focusNode: _maintenanceCostFocusNode,
+                          nextFocusNode: _machinePriceFocusNode,
+                        ),
                         _buildTextField(
-                            'Machine Purchase Price (MP) (Rs)',
-                            _machinePriceController,
-                            TextInputType.number,
-                            _validateInput),
+                          'Machine Purchase Price (MP) (Rs)',
+                          _machinePriceController,
+                          TextInputType.number,
+                          _validateInput,
+                          focusNode: _machinePriceFocusNode,
+                          nextFocusNode: _machineLifeFocusNode,
+                        ),
                         _buildTextField(
-                            'Machine Life in Years (L) (Yrs)',
-                            _machineLifeController,
-                            TextInputType.number,
-                            _validateInput),
+                          'Machine Life in Years (L) (Yrs)',
+                          _machineLifeController,
+                          TextInputType.number,
+                          _validateInput,
+                          focusNode: _machineLifeFocusNode,
+                          nextFocusNode: _salvageValueFocusNode,
+                        ),
                         _buildTextField(
-                            'Salvage Value (S) (Rs)',
-                            _salvageValueController,
-                            TextInputType.number,
-                            _validateInput),
-                        // Show Power Consumption & Power Cost only if selectedMachineId == 1
+                          'Salvage Value (S) (Rs)',
+                          _salvageValueController,
+                          TextInputType.number,
+                          _validateInput,
+                          focusNode: _salvageValueFocusNode,
+                          nextFocusNode: _powerConsumptionFocusNode,
+                        ),
                         if (selectedMachineId == '1') ...[
                           _buildTextField(
-                              'Power Consumption per Hour (PC) (Kw)',
-                              _powerConsumptionController,
-                              TextInputType.number,
-                              _validateInput),
+                            'Power Consumption per Hour (PC) (Kw)',
+                            _powerConsumptionController,
+                            TextInputType.number,
+                            _validateInput,
+                            focusNode: _powerConsumptionFocusNode,
+                            nextFocusNode: _powerCostFocusNode,
+                          ),
                           _buildTextField(
-                              'Power Cost per Unit (PU) (Rs)',
-                              _powerCostController,
-                              TextInputType.number,
-                              _validateInput),
+                            'Power Cost per Unit (PU) (Rs)',
+                            _powerCostController,
+                            TextInputType.number,
+                            _validateInput,
+                            focusNode: _powerCostFocusNode,
+                          ),
                         ],
-                        // Show Fuel Cost only if selectedMachineId == 2
                         if (selectedMachineId == '2')
                           _buildTextField(
-                              'Fuel Cost (PH) (Rs)',
-                              _fuelCostController,
-                              TextInputType.number,
-                              _validateInput),
-                        _buildTextField(
-                            'Operator Wage per Hour (OW) (Rs)',
-                            _operatorWageController,
+                            'Fuel Cost (PH) (Rs)',
+                            _fuelCostController,
                             TextInputType.number,
-                            _validateInput),
+                            _validateInput,
+                            focusNode: _fuelCostFocusNode,
+                          ),
                         _buildTextField(
-                            'Consumables Cost per Year (CC) (Rs)',
-                            _consumableCostController,
-                            TextInputType.number,
-                            _validateInput),
+                          'Operator Wage per Hour (OW) (Rs)',
+                          _operatorWageController,
+                          TextInputType.number,
+                          _validateInput,
+                          focusNode: _operatorWageFocusNode,
+                          nextFocusNode: _consumableCostFocusNode,
+                        ),
                         _buildTextField(
-                            'Factory Rent/Overheads per Year (RA) (Rs)',
-                            _factoryRentController,
-                            TextInputType.number,
-                            _validateInput),
+                          'Consumables Cost per Year (CC) (Rs)',
+                          _consumableCostController,
+                          TextInputType.number,
+                          _validateInput,
+                          focusNode: _consumableCostFocusNode,
+                          nextFocusNode: _factoryRentFocusNode,
+                        ),
                         _buildTextField(
-                            'Operating Hours per Day (H) (Hr)',
-                            _operatingHoursController,
-                            TextInputType.number,
-                            _validateInput),
+                          'Factory Rent/Overheads per Year (RA) (Rs)',
+                          _factoryRentController,
+                          TextInputType.number,
+                          _validateInput,
+                          focusNode: _factoryRentFocusNode,
+                          nextFocusNode: _operatingHoursFocusNode,
+                        ),
                         _buildTextField(
-                            'Working Days per Year (D) (Days))',
-                            _workingDaysController,
-                            TextInputType.number,
-                            _validateInput),
+                          'Operating Hours per Day (H) (Hr)',
+                          _operatingHoursController,
+                          TextInputType.number,
+                          _validateInput,
+                          focusNode: _operatingHoursFocusNode,
+                          nextFocusNode: _workingDaysFocusNode,
+                        ),
+                        _buildTextField(
+                          'Working Days per Year (D) (Days))',
+                          _workingDaysController,
+                          TextInputType.number,
+                          _validateInput,
+                          focusNode: _workingDaysFocusNode,
+                        ),
                       ],
                     ),
                   ),
@@ -446,9 +607,11 @@ class _CalculationSheetState extends State<CalculationSheet> {
           setState(() {
             selectedMachine = name;
             selectedMachineId = selected.id;
-            _powerConsumptionController.clear();
-            _powerCostController.clear();
-            _fuelCostController.clear();
+            selectedCategory = null;
+            selectedSubCategory = null;
+            // _powerConsumptionController.clear();
+            // _powerCostController.clear();
+            // _fuelCostController.clear();
             categoryList.clear();
             subcategoryList.clear();
           });
@@ -485,10 +648,10 @@ class _CalculationSheetState extends State<CalculationSheet> {
           await prefs.setString('selectedMachinecatId', selected.id);
           await prefs.setString('selectedMachinecatName', selected.name);
           setState(() {
-            selectedCategory = name; // Update UI
+            selectedCategory = name;
+            selectedSubCategory = null;
             subcategoryList.clear();
           });
-          // categoryList.clear();
           if (kDebugMode) {
             print(
                 "-----Machine categories Id-------${prefs.getString('selectedMachinecatId')}");
@@ -501,7 +664,6 @@ class _CalculationSheetState extends State<CalculationSheet> {
             print(
                 "-----Main---Machine Id--------${prefs.getString('selectedMainMachineId')}");
           }
-          // subcategoryList.clear();
           fetchSubCategories();
           if (kDebugMode) {
             print(
@@ -531,7 +693,7 @@ class _CalculationSheetState extends State<CalculationSheet> {
           await prefs.setString('selectedMachinesubcatId', selected.id);
           await prefs.setString('selectedMachinesubcatName', selected.name);
           setState(() {
-            selectedSubCategory = name; // Update UI
+            selectedSubCategory = name;
           });
           if (kDebugMode) {
             print(selected.id);
@@ -794,36 +956,57 @@ class _CalculationSheetState extends State<CalculationSheet> {
         items: options
             .map((subcat) => DropdownMenuItem<String>(
                   value: subcat.name,
-                  child:
-                      Text(subcat.name, style: const TextStyle(fontSize: 16)),
+                  child: Container(
+                      color: Colors.white,
+                      child: Text(subcat.name,
+                          style: const TextStyle(fontSize: 16))),
                 ))
             .toList(),
         onChanged: onChanged,
         hint: Text(hint,
             style: const TextStyle(fontSize: 16, color: Colors.grey)),
+        selectedItemBuilder: (BuildContext context) {
+          return options.map<Widget>((MachineSubCatModel subcat) {
+            return SizedBox(
+                width: 80, // Set your desired width here
+                child: Text(
+                  selectedValue ?? hint,
+                  style: const TextStyle(fontSize: 16),
+                ));
+          }).toList();
+        },
       ),
     );
   }
 
   Widget _buildTextField(String labelText, TextEditingController controller,
-      TextInputType keyboardType, String? Function(String?) validator) {
+      TextInputType keyboardType, String? Function(String?) validator,
+      {FocusNode? focusNode, FocusNode? nextFocusNode}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
+        focusNode: focusNode,
         cursorColor: Colors.blue,
         cursorErrorColor: Colors.blue,
-        validator: validator,
-        onChanged: (value) {
-          if (value.isNotEmpty && double.tryParse(value) != null) {
+        onFieldSubmitted: (value) {
+          if (nextFocusNode != null) {
+            FocusScope.of(context).requestFocus(nextFocusNode);
+          } else {
+            FocusScope.of(context).unfocus();
+          }
+        },
+        validator: (value) {
+          String? errorMessage = validator(value);
+          if (errorMessage == null &&
+              value != null &&
+              double.tryParse(value) != null) {
             if (double.parse(value) < 0) {
-              controller.text = '0';
-              controller.selection = TextSelection.fromPosition(
-                TextPosition(offset: controller.text.length),
-              );
+              return 'Negative values are not allowed';
             }
           }
+          return errorMessage;
         },
         decoration: InputDecoration(
           labelText: labelText,
@@ -850,7 +1033,9 @@ class _CalculationSheetState extends State<CalculationSheet> {
 
   void _calculateMHR() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() &&
+        selectedCategory != null &&
+        selectedSubCategory != null) {
       final provider = Provider.of<CalculationProvider>(context, listen: false);
       String? selectedMainCatId = prefs.getString('selectedMainMachineId');
       Map<String, dynamic> requestData = {
@@ -900,17 +1085,14 @@ class _CalculationSheetState extends State<CalculationSheet> {
             ? _fuelCostController.text
             : '0';
       }
-
       //  Print data
       if (kDebugMode) {
         print("Request Data: $requestData");
       }
-
       // Save input values
       requestData.forEach((key, value) async {
         await prefs.setString(key, value.toString());
       });
-
       try {
         await provider.calculateMHR(requestData);
         if (provider.calculationResult != null) {
@@ -929,6 +1111,10 @@ class _CalculationSheetState extends State<CalculationSheet> {
         if (kDebugMode) {
           print("Error fetching calculation: $error");
         }
+      }
+    } else {
+      if (kDebugMode) {
+        print("Please fill all required fields correctly.");
       }
     }
   }

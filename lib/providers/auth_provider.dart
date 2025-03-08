@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart';
 import 'package:machine_hour_rate/core/services/auth_service.dart';
 import 'package:machine_hour_rate/models/userModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,9 +16,6 @@ class AuthProvider extends ChangeNotifier {
 
   UserModel? _userData;
   UserModel? get userData => _userData;
-
-  // Details? _userData;
-  // Details? get userData => _userData;
 
   Future<String?> registerUser({
     required String firstName,
@@ -42,11 +38,11 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     if (response["success"]) {
-      return null; // Registration successful
+      return null;
     } else {
       _validationErrors = response["errors"]?.cast<String, String>();
       notifyListeners();
-      return response["message"]; // Return error message
+      return response["message"];
     }
   }
 
@@ -55,12 +51,22 @@ class AuthProvider extends ChangeNotifier {
     final userData = prefs.getString("user_data");
 
     if (userData != null) {
-      _userData = jsonDecode(userData);
+      _userData = UserModel.fromJson(json.decode(userData));
       if (kDebugMode) {
-        print("User Data: $_userData");
+        print("User Data: $userData");
       }
       notifyListeners();
     }
+  }
+
+  Future<void> storeUserData(String mobile, String name, String email,
+      String userType, String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString("userMobile", mobile);
+    await prefs.setString("userName", name);
+    await prefs.setString("userEmail", email);
+    await prefs.setString("userType", userType);
+    await prefs.setString("userId", id);
   }
 
   Future<String?> loginUserOtp({
@@ -74,21 +80,31 @@ class AuthProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
-
     if (response["success"]) {
-      // Save user data locally
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString("user_data", jsonEncode(response["details"]));
-
-      _userData = response["details"];
-      notifyListeners();
-      return response["message"];
+      if (response.containsKey("details") && response["details"] != null) {
+        _userData = UserModel.fromJson(response["details"]);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString("user_data", jsonEncode(response["details"]));
+        final userId = prefs.getString("user_data");
+        if (kDebugMode) {
+          print("---------------------------user ----all----- data $userId");
+        }
+        notifyListeners();
+        return response["message"];
+      } else {
+        return "Send Otp.";
+      }
     } else {
-      _validationErrors = response["errors"]?.cast<String, String>();
+      _validationErrors = response["failed"]?.cast<String, String>();
       notifyListeners();
+      if (response.containsKey("message")) {
+        if (response["message"].toLowerCase().contains("not registered") ||
+            response["message"].toLowerCase().contains("invalid")) {
+          return "Number not registered, please register before you login.";
+        }
+      }
       return response["message"];
     }
-    // return null;
   }
 
   Future<String?> loginUser({
@@ -107,7 +123,7 @@ class AuthProvider extends ChangeNotifier {
     if (response["success"]) {
       if (response["details"] != null) {
         _userData = UserModel.fromJson(response["details"]);
-        // You might want to print the UserModel here for debugging
+
         if (kDebugMode) {
           print("User Data: ${_userData?.toJson()}");
         }
@@ -116,28 +132,32 @@ class AuthProvider extends ChangeNotifier {
         await prefs.setString("user_data", jsonEncode(response["details"]));
         notifyListeners();
         return response["message"];
-      } else {
-        if (kDebugMode) {
-          print("User details are null.");
-        }
-        return "User details couldn't be fetched. Please try again.";
       }
-      // _userData = Details.fromJson(response["details"]);
-      // SharedPreferences prefs = await SharedPreferences.getInstance();
-      // await prefs.setString("user_data", jsonEncode(response["details"]));
-      // notifyListeners();
-      // return response["message"];
     } else {
-      _validationErrors = response["errors"]?.cast<String, String>();
+      // _validationErrors = response["errors"]?.cast<String, String>();
+      if (response.containsKey("errors") &&
+          response["errors"] is Map<String, dynamic>) {
+        _validationErrors = response["errors"].cast<String, String>();
+      } else {
+        _validationErrors = {}; // Assign an empty map if there are no errors
+      }
       notifyListeners();
+      if (response.containsKey("message")) {
+        if (response["message"].toLowerCase().contains("invalid")) {
+          return "otp is invalid, please enter valid otp.";
+        }
+        return response["message"];
+      }
       return response["message"];
     }
-    // return null;
+    return null;
   }
 
   Future<void> logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove("user_data");
+    await prefs.remove("isGuestUser");
+    await prefs.clear();
     _userData = null;
     notifyListeners();
   }

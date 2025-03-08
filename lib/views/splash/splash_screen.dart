@@ -26,6 +26,7 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _animationController;
   late Animation<double> _animation;
   bool hasInternet = true;
+  bool is_login = true;
 
   @override
   void initState() {
@@ -103,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen>
                             const Text(
                               'Efficiently calculate',
                               style: TextStyle(
-                                fontSize: 26,
+                                fontSize: 18,
                                 fontWeight: FontWeight.normal,
                                 // color: Colors.lightBlue,
                               ),
@@ -111,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen>
                             const Text(
                               'Machine Hour Rates',
                               style: TextStyle(
-                                fontSize: 26,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w500,
                                 // color: Colors.lightBlue,
                               ),
@@ -119,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
                             const Text(
                               'with Precision',
                               style: TextStyle(
-                                fontSize: 26,
+                                fontSize: 18,
                                 fontWeight: FontWeight.normal,
                                 // color: Colors.lightBlue,
                               ),

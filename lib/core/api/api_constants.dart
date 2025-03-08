@@ -11,4 +11,5 @@ class ApiConstants {
   static const String categories = "categories";
   static const String subCategories = "subcategories";
   static const String calculation = "calculation";
+  static const String calculationlist = "calculation_list";
 }

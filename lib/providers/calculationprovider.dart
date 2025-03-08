@@ -36,6 +36,16 @@ class CalculationProvider with ChangeNotifier {
     calculation = null;
     notifyListeners();
   }
+
+  // CalculationListModel? _calculation;
+
+  // CalculationListModel? get calculation => _calculation;
+
+  // Future<void> fetchCalculation() async {
+  //   ApiService apiService = ApiService();
+  //   _calculation =
+  //   notifyListeners();
+  // }
 }
 
 class SharedPrefsHelper {

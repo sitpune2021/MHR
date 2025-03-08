@@ -2,15 +2,18 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:machine_hour_rate/core/db/database_helper.dart';
 import 'package:machine_hour_rate/core/theme/colors.dart';
 import 'package:machine_hour_rate/models/calculationModel.dart';
 import 'package:machine_hour_rate/models/mainmachineModel.dart';
 import 'package:machine_hour_rate/providers/calculationprovider.dart';
 import 'package:machine_hour_rate/views/home/home_page_view.dart';
 import 'package:machine_hour_rate/views/home/home_screen.dart';
+import 'package:machine_hour_rate/views/login/login_screen.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pdfLib;
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
@@ -41,9 +44,11 @@ class MHRCalculatorScreen extends StatefulWidget {
 
 class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
   String? machineHourRate;
-  String? mhr;
+  get dataMap => null;
   MainMachineModel? selectedMachineId;
+  get colorList => null;
   Map<String, dynamic> storedValues = {};
+  Map<String, dynamic> resultValue = {};
 
   @override
   void initState() {
@@ -60,6 +65,23 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
       provider.calculation = loadedCalculation;
       provider.notifyListeners(); // Notify listeners to rebuild
     }
+  }
+
+  Future<void> _saveInputValues() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString("power_consumption", "");
+    await prefs.setString("maintanance_cost", "");
+    await prefs.setString("machine_purchase_price", "");
+    await prefs.setString("machine_life", "");
+    await prefs.setString("salvage_value", "");
+    await prefs.setString("power_cost", "");
+    await prefs.setString("fuel_cost_per_hour", "");
+    await prefs.setString("operator_wage", "");
+    await prefs.setString("consumable_cost", "");
+    await prefs.setString("factory_rent", "");
+    await prefs.setString("operating_hours", "");
+    await prefs.setString("working_days", "");
+    await prefs.setString("machine_hour_rate", "");
   }
 
   Future<void> _loadStoredValues() async {
@@ -88,143 +110,133 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
         "total_working_hours": prefs.getString("total_working_hours"),
       };
     });
-  }
-
-  void _showMessage(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Future<void> _downloadPDF(BuildContext context, dynamic result) async {
-    final provider = Provider.of<CalculationProvider>(context, listen: false);
-    final result = provider.calculationResult;
-    try {
-      if (result?.mhr == null || result!.mhr!.isEmpty) {
-        _showMessage("Machine Hour Rate is empty!");
-        return;
-      }
-
-      // Request Storage Permission
-      bool hasPermission = await _requestStoragePermission(context);
-      if (!hasPermission) {
-        _showMessage("Storage permission denied!");
-        return;
-      }
-
-      // Generate the PDF
-      final pdf = pdfLib.Document();
-      pdf.addPage(
-        pdfLib.Page(
-          build: (pdfLib.Context context) => pdfLib.Center(
-            child: pdfLib.Column(
-              children: [
-                pdfLib.Text("Machine Hour Rate Report",
-                    style: const pdfLib.TextStyle(fontSize: 24)),
-                pdfLib.SizedBox(height: 20),
-                pdfLib.Text("Machine Hour Rate: ${result.mhr ?? 'N/A'}"),
-                pdfLib.Text("Depreciation: ${result.depreciation ?? '0'}"),
-                pdfLib.Text("Power Cost: ${result.powerCost ?? '0'}"),
-                pdfLib.Text("Operator Wages: ${result.operatorWages ?? '0'}"),
-                pdfLib.Text(
-                    "Total Cost Per Year: ${result.totalCostPerYear ?? '0'}"),
-                pdfLib.Text(
-                    "Total Working Hours: ${result.totalWorkingHours ?? '0'}"),
-                pdfLib.SizedBox(height: 20),
-                pdfLib.Text("Your Input Values:",
-                    style: const pdfLib.TextStyle(fontSize: 20)),
-                pdfLib.Text(
-                    "Maintenance Cost: ${storedValues['maintanance_cost'] ?? '0'}"),
-                pdfLib.Text(
-                    "Machine Purchase Price: ${storedValues['machine_purchase_price'] ?? '0'}"),
-                pdfLib.Text(
-                    "Machine Life: ${storedValues['machine_life'] ?? '0'}"),
-                pdfLib.Text(
-                    "Salvage Value: ${storedValues['salvage_value'] ?? '0'}"),
-                pdfLib.Text(
-                    "Power Consumption: ${storedValues['power_consumption'] ?? '0'}"),
-                pdfLib.Text(
-                    "Fuel Cost: ${storedValues['fuel_cost_per_hour'] ?? '0'}"),
-                pdfLib.Text(
-                    "Operator Wage: ${storedValues['operator_wage'] ?? '0'}"),
-                pdfLib.Text(
-                    "Consumable Cost: ${storedValues['consumable_cost'] ?? '0'}"),
-                pdfLib.Text(
-                    "Factory Rent: ${storedValues['factory_rent'] ?? '0'}"),
-                pdfLib.Text(
-                    "Operating Hours: ${storedValues['operating_hours'] ?? '0'}"),
-                pdfLib.Text(
-                    "Working Days: ${storedValues['working_days'] ?? '0'}"),
-              ],
-            ),
-            // child: pdfLib.Text("Machine Hour Rate: $mhr",
-            //     style: const pdfLib.TextStyle(fontSize: 20)),
-          ),
-        ),
-      );
-
-      // Let the user choose a directory
-      String? selectedDirectory = await _pickDirectory();
-      if (selectedDirectory == null) {
-        _showMessage("No folder selected!");
-        return;
-      }
-
-      await _savePDF(context, pdf, selectedDirectory);
-    } catch (e) {
-      _showMessage("Error generating PDF: $e");
+    if (kDebugMode) {
+      print(
+          "--------------------------MHRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR------------------${prefs.getString("mhr")}");
+    }
+    if (kDebugMode) {
+      print("------------------SAVE----ALL------DATA---------$storedValues");
     }
   }
 
-  Future<bool> _requestStoragePermission(BuildContext context) async {
+  Future<void> _downloadPDF(BuildContext context, dynamic result) async {
+    if (result.mhr == null || result.mhr!.isEmpty) {
+      _showMessage(context, "Machine Hour Rate is empty!");
+      return;
+    }
+
+    if (!await _requestStoragePermission()) {
+      return; // Permission denied
+    }
+
+    // Get external storage directory (Scoped Storage)
+    Directory? directory = await getExternalStorageDirectory();
+    if (directory == null) {
+      _showMessage(context, "Unable to find storage directory!");
+      return;
+    }
+
+    // Use Downloads directory instead
+    String documentsPath =
+        "/storage/emulated/0/Download"; // Standard Downloads folder
+    String filePath = "$documentsPath/machine_hour_rate.pdf";
+
+    final pdf = pdfLib.Document();
+    pdf.addPage(
+      pdfLib.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pdfLib.Context context) => pdfLib.Center(
+          child: pdfLib.Column(
+            mainAxisAlignment: pdfLib.MainAxisAlignment.start,
+            children: [
+              pdfLib.Text("Machine Hour Rate Overview",
+                  style: const pdfLib.TextStyle(fontSize: 24)),
+              pdfLib.SizedBox(height: 20),
+              //calculation
+              pdfLib.Text("Machine Hour Rate: ${result.mhr}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Depreciation: ${result.depreciation}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Power Cost: ${result.powerCost}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Operator Wages: ${result.operatorWages}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Total Cost Per Year: ${result.totalCostPerYear}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Total Working Hours: ${result.totalWorkingHours}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              // inpute
+              pdfLib.Text(
+                  "Maintenance Cost: ${storedValues['maintanance_cost']}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Machine Purchase Price: ${storedValues['machine_purchase_price']}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Machine Life: ${storedValues['machine_life']}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Salvage Value: ${storedValues['salvage_value']}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Power Consumption: ${storedValues['power_consumption'] ?? '0'}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Power Cost: ${storedValues['power_cost'] ?? '0'}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Fuel Cost: ${storedValues['fuel_cost_per_hour'] ?? '0'}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Operator Wage: ${storedValues['operator_wage']}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Consumable Cost: ${storedValues['consumable_cost']}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Factory Rent: ${storedValues['factory_rent']}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Operating Hours: ${storedValues['operating_hours']}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Working Days: ${storedValues['working_days']}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.SizedBox(height: 10),
+              pdfLib.Text("Generated on: ${DateTime.now()}"),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    await _savePDF(context, pdf, filePath);
+  }
+
+  Future<void> _savePDF(
+      BuildContext context, pdfLib.Document pdf, String filePath) async {
+    try {
+      final file = File(filePath);
+      await file.writeAsBytes(await pdf.save());
+      _showMessage(context, "PDF saved at $filePath");
+    } catch (e) {
+      _showMessage(context, "Failed to save PDF: $e");
+    }
+  }
+
+  Future<bool> _requestStoragePermission() async {
     if (Platform.isAndroid) {
       var status = await Permission.storage.request();
 
       if (status.isGranted) return true;
 
-      if (status.isPermanentlyDenied) {
-        _showMessage(
-            "Storage permission is permanently denied. Enable it in settings.");
-        openAppSettings();
-      }
+      if (await Permission.manageExternalStorage.isGranted) return true;
 
       return false;
     }
     return true;
   }
 
-  Future<String?> _pickDirectory() async {
-    try {
-      return await FilePicker.platform.getDirectoryPath();
-    } catch (e) {
-      debugPrint("Error picking directory: $e");
-      return null;
-    }
-  }
-
-  Future<void> _savePDF(
-      BuildContext context, pdfLib.Document pdf, String directoryPath) async {
-    try {
-      // Ensure the directory exists
-      final directory = Directory(directoryPath);
-      if (!(await directory.exists())) {
-        await directory.create(recursive: true); // Create if it doesn't exist
-      }
-      String filePath = "$directoryPath/MHR_Report.pdf";
-      File file = File(filePath);
-      await file.writeAsBytes(await pdf.save());
-
-      _showMessage("PDF Downloaded Successfully: $filePath");
-    } catch (e) {
-      _showMessage("Error saving PDF: $e");
-    }
+  void _showMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<CalculationProvider>(context);
-    final result = provider.calculationResult;
-
     return WillPopScope(
       onWillPop: () async {
         if (Navigator.canPop(context)) {
@@ -234,161 +246,546 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
         return false;
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 20),
-                const Text("VIEW",
-                    style:
-                        TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 20),
-                SizedBox(
-                  height: 250,
-                  width: 280,
-                  child: PieChart(
-                    dataMap: widget.dataMap,
-                    animationDuration: const Duration(milliseconds: 800),
-                    chartType: ChartType.ring,
-                    colorList: widget.colorList,
-                    legendOptions: const LegendOptions(showLegends: true),
-                    chartValuesOptions: const ChartValuesOptions(
-                      showChartValuesInPercentage: true,
+          backgroundColor: Colors.white,
+          body: FutureBuilder(
+              future: _loadCalculationResult(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.values) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else {
+                  final result = provider.calculationResult;
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.only(left: 10, right: 10, top: 20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          const Text("RESULT VIEW",
+                              style: TextStyle(
+                                  fontSize: 28, fontWeight: FontWeight.bold)),
+                          SizedBox(
+                            height: 200,
+                            width: 280,
+                            child: PieChart(
+                              dataMap: widget.dataMap,
+                              animationDuration:
+                                  const Duration(milliseconds: 800),
+                              chartType: ChartType.ring,
+                              colorList: widget.colorList,
+                              legendOptions:
+                                  const LegendOptions(showLegends: true),
+                              chartValuesOptions: const ChartValuesOptions(
+                                showChartValuesInPercentage: true,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.only(
+                                left: 20, right: 20, top: 10, bottom: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.lightBlueAccent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text("${result!.mhr?.toString()}",
+                                    style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold)),
+                                const Center(
+                                  child: Text(
+                                    "Machine Hour Rate",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                    textAlign: TextAlign.start,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.only(
+                                left: 20, right: 20, top: 10, bottom: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      "Depreciation",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      ": ${result.depreciation?.toString()}",
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      "Power Cost",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      ": ${result.powerCost?.toString()}",
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      "Operator Wages",
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    Text(
+                                      ": ${result.operatorWages?.toString()}",
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      "Total Cost Per Year",
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    Text(
+                                      ": ${result.totalCostPerYear?.toString()}",
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      "Total Working Hours",
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    Text(
+                                      ": ${result.totalWorkingHours?.toString()}",
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                )
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          const Divider(
+                            thickness: 2,
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(height: 5),
+                          const Text(
+                            "Your Input ",
+                            style: TextStyle(
+                                fontSize: 30, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(
+                            height: 12,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.only(
+                                left: 60, right: 60, top: 10, bottom: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Maintenance Cost",
+                                        style: TextStyle(fontSize: 16)),
+                                    Text(
+                                        ": ${storedValues['maintanance_cost']}",
+                                        style: const TextStyle(fontSize: 16)),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Machine Purchase Price",
+                                        style: TextStyle(fontSize: 16)),
+                                    Text(
+                                        ": ${storedValues['machine_purchase_price']}",
+                                        style: const TextStyle(fontSize: 16)),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Machine Life",
+                                        style: TextStyle(fontSize: 16)),
+                                    Text(": ${storedValues['machine_life']}",
+                                        style: const TextStyle(fontSize: 16)),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Salvage Value",
+                                        style: TextStyle(fontSize: 16)),
+                                    Text(": ${storedValues['salvage_value']}",
+                                        style: const TextStyle(fontSize: 16)),
+                                  ],
+                                ),
+                                if (storedValues['main_cat_id'] == '1') ...[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        "Power Consumption",
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                      Text(
+                                        ": ${storedValues['power_consumption']}",
+                                        style: const TextStyle(fontSize: 16),
+                                      )
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        "Power Cost",
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                      Text(
+                                        ": ${storedValues['power_cost']}",
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                                if (storedValues['main_cat_id'] == '2') ...[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        "Fuel Cost",
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                      Text(
+                                        ": ${storedValues['fuel_cost_per_hour']}",
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Operator Wage",
+                                        style: TextStyle(fontSize: 16)),
+                                    Text(": ${storedValues['operator_wage']}",
+                                        style: const TextStyle(fontSize: 16)),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Consumable Cost",
+                                        style: TextStyle(fontSize: 16)),
+                                    Text(": ${storedValues['consumable_cost']}",
+                                        style: const TextStyle(fontSize: 16)),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Factory Rent",
+                                        style: TextStyle(fontSize: 16)),
+                                    Text(": ${storedValues['factory_rent']}",
+                                        style: const TextStyle(fontSize: 16)),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Operating Hours",
+                                        style: TextStyle(fontSize: 16)),
+                                    Text(": ${storedValues['operating_hours']}",
+                                        style: const TextStyle(fontSize: 16)),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Working Days",
+                                        style: TextStyle(fontSize: 16)),
+                                    Text(": ${storedValues['working_days']}",
+                                        style: const TextStyle(fontSize: 16)),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Stack(
+                            children: [
+                              SizedBox(
+                                width: double.infinity,
+                                child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      // Save Calculation
+                                      ElevatedButton.icon(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: kButtonColor,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        onPressed: () async {
+                                          SharedPreferences prefs =
+                                              await SharedPreferences
+                                                  .getInstance();
+                                          String? userId =
+                                              prefs.getString('user_id');
+
+                                          bool? guestUser =
+                                              prefs.getBool("guest_user");
+
+                                          if (userId == null &&
+                                              guestUser == true) {
+                                            _showGuestDialog(context);
+                                          } else {
+                                            await SaveCalculation(() {
+                                              Navigator.of(context)
+                                                  .pushReplacement(
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              const HomeScreen()));
+                                            }).saveData(context);
+                                          }
+
+                                          // await SaveCalculation(() {
+                                          //   Navigator.of(context)
+                                          //       .pushReplacement(
+                                          //           MaterialPageRoute(
+                                          //               builder: (context) =>
+                                          //                   const HomeScreen()));
+                                          // }).saveData(context);
+                                        },
+                                        icon: const Icon(Icons.save),
+                                        label: const Text("Save"),
+                                      ),
+                                      //pdf download
+                                      ElevatedButton.icon(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: kButtonColor,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(20.0),
+                                          ),
+                                        ),
+                                        onPressed: () =>
+                                            _downloadPDF(context, result),
+                                        icon: const Icon(Icons.download),
+                                        label: const Text("Download"),
+                                      ),
+                                    ]),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-                // Display calculation results if available
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.lightBlueAccent,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(result?.mhr?.toString() ?? 'N/A',
-                          style: const TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold)),
-                      const Text("Machine Hour Rate",
-                          style: TextStyle(fontSize: 16)),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 6),
-                // Display detailed breakdown of costs
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white70,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Depreciation: ${result?.depreciation ?? 'N/A'}"),
-                      Text("Power Cost: ${result?.powerCost ?? 'N/A'}"),
-                      Text("Operator Wages: ${result?.operatorWages ?? 'N/A'}"),
-                      Text(
-                          "Total Cost Per Year: ${result?.totalCostPerYear ?? 'N/A'}"),
-                      Text(
-                          "Total Working Hours: ${result?.totalWorkingHours ?? 'N/A'}"),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Divider(thickness: 2, color: Colors.grey),
-                const SizedBox(height: 5),
-                const Text(
-                  "Your Input ",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                // Display stored input values
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                          "Maintenance Cost: ${storedValues['maintanance_cost'] ?? 'N/A'}"),
-                      Text(
-                          "Machine Purchase Price: ${storedValues['machine_purchase_price'] ?? 'N/A'}"),
-                      Text(
-                          "Machine Life: ${storedValues['machine_life'] ?? 'N/A'}"),
-                      Text(
-                          "Salvage Value: ${storedValues['salvage_value'] ?? 'N/A'}"),
-                      if (storedValues['main_cat_id'] == '1') ...[
-                        Text(
-                            "Power Consumption: ${storedValues['power_consumption'] ?? 'N/A'}"),
-                        Text(
-                            "Power Cost: ${storedValues['power_cost'] ?? 'N/A'}"),
-                      ],
-                      if (storedValues['main_cat_id'] == '2') ...[
-                        Text(
-                            "Fuel Cost: ${storedValues['fuel_cost_per_hour'] ?? 'N/A'}"),
-                      ],
-                      Text(
-                          "Operator Wage: ${storedValues['operator_wage'] ?? 'N/A'}"),
-                      Text(
-                          "Consumable Cost: ${storedValues['consumable_cost'] ?? 'N/A'}"),
-                      Text(
-                          "Factory Rent: ${storedValues['factory_rent'] ?? 'N/A'}"),
-                      Text(
-                          "Operating Hours: ${storedValues['operating_hours'] ?? 'N/A'}"),
-                      Text(
-                          "Working Days: ${storedValues['working_days'] ?? 'N/A'}"),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                  );
+                }
+              })
+          // result == null
+          //     ? const CircularProgressIndicator()
+          // :
+
+          ),
+    );
+  }
+
+  Widget buildAlignedRow({required String label, required dynamic value}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            textAlign: TextAlign.left,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
+        const SizedBox(
+          width: 50,
+        ),
+        const Expanded(
+          child: Text(
+            ":",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value.toString(),
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> saveDataForGuest(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String? mainCatId = prefs.getString('main_cat_id');
+
+    String? currencyId = prefs.getString('currency_id');
+    String? currencyAmount = prefs.getString('selectedCurrencyName');
+    String? subcatId = prefs.getString('selectedMachinesubcatId');
+
+    // Numeric values
+    String? maintenanceCost = prefs.getString("maintanance_cost");
+    String? machinePurchasePrice = prefs.getString('machine_purchase_price');
+    String? machineLife = prefs.getString('machine_life');
+    String? salvageValue = prefs.getString('salvage_value');
+    String? operatorWage = prefs.getString('operator_wage');
+    String? consumableCost = prefs.getString('consumable_cost');
+    String? factoryRent = prefs.getString('factory_rent');
+    String? operatingHours = prefs.getString('operating_hours');
+    String? workingDays = prefs.getString("working_days");
+    String? depreciation = prefs.getString('depreciation');
+    String? powerCosts = prefs.getString('power_costs');
+    String? operatorWages = prefs.getString('operator_wages');
+    String? totalCostPerYear = prefs.getString('total_cost_per_year');
+    String? totalWorkingHours = prefs.getString('total_working_hours');
+    String? machineHourRate = prefs.getString('mhr');
+
+    String? powerConsumption = prefs.getString("power_consumption");
+    String? powerCost = prefs.getString("power_cost");
+    String? fuelCost = prefs.getString("fuel_cost_per_hour");
+    Map<String, dynamic> requestBody = {
+      "main_cat_id": mainCatId,
+      "currency_id": currencyId,
+      "currency_amount": currencyAmount,
+      "subcat_id": subcatId,
+      "maintanance_cost": maintenanceCost,
+      "machine_purchase_price": machinePurchasePrice,
+      "machine_life": machineLife,
+      "salvage_value": salvageValue,
+      "operator_wage": operatorWage,
+      "consumable_cost": consumableCost,
+      "factory_rent": factoryRent,
+      "operating_hours": operatingHours,
+      "working_days": workingDays,
+      "depreciation": depreciation,
+      "power_cost": powerCosts,
+      "operator_wages": operatorWages,
+      "total_cost_per_year": totalCostPerYear,
+      "total_working_hours": totalWorkingHours,
+      "machine_hour_rate": machineHourRate,
+    };
+    if (mainCatId == '1') {
+      requestBody["power_consumption"] = powerConsumption;
+      requestBody["power_cost_per_unit"] = powerCost;
+    } else if (mainCatId == '2') {
+      requestBody["fuel_cost_per_hour"] = fuelCost;
+    }
+    int result = await DatabaseHelper().insertCalculation(requestBody);
+
+    if (result == 1) {
+      print("-----------------------------------------data inserted");
+    } else {
+      print("-----------------------------------------data failed");
+    }
+  }
+
+  void _showGuestDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text("Guest User"),
+          content: const Text(
+              "You are currently a guest user. Would you like to continue as a guest or log in/register?"),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("Continue as Guest"),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await saveDataForGuest(context);
+
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const HomePage()));
+              },
             ),
-          ),
-        ),
-        // Fixed bottom buttons
-        bottomNavigationBar: BottomAppBar(
-          color: Colors.white,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // Save Calculation Button
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kButtonColor,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () async {
-                  await SaveCalculation(() {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => const HomeScreen()));
-                  }).saveData(context);
-                },
-                icon: const Icon(Icons.save),
-                label: const Text("Save"),
-              ),
-              // Download PDF Button
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kButtonColor,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () => _downloadPDF(context, storedValues),
-                icon: const Icon(Icons.download),
-                label: const Text("Download"),
-              ),
-            ],
-          ),
-        ),
-      ),
+            TextButton(
+              child: const Text("Log In / Register"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const LoginScreen()));
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -403,6 +800,9 @@ class SaveCalculation {
 
     String? mainCatId = prefs.getString('main_cat_id');
     String? userId = prefs.getString('user_id');
+    if (kDebugMode) {
+      print("-----------------USER-----LOGIN-------ID---------------$userId");
+    }
     String? currencyId = prefs.getString('currency_id');
     String? currencyAmount = prefs.getString('selectedCurrencyName');
     String? subcatId = prefs.getString('selectedMachinesubcatId');
@@ -428,14 +828,12 @@ class SaveCalculation {
     String? powerCost = prefs.getString("power_cost");
     String? fuelCost = prefs.getString("fuel_cost_per_hour");
 
-    // Create the request body
     Map<String, dynamic> requestBody = {
       "main_cat_id": mainCatId,
-      "user_id": 10, // Ensure this is the actual user id
+      "user_id": userId,
       "currency_id": currencyId,
       "currency_amount": currencyAmount,
-      "subcat_id": subcatId, // Assuming it might be used
-
+      "subcat_id": subcatId,
       "maintanance_cost": maintenanceCost,
       "machine_purchase_price": machinePurchasePrice,
       "machine_life": machineLife,
@@ -445,7 +843,6 @@ class SaveCalculation {
       "factory_rent": factoryRent,
       "operating_hours": operatingHours,
       "working_days": workingDays,
-
       "depreciation": depreciation,
       "power_cost": powerCosts,
       "operator_wages": operatorWages,
@@ -453,23 +850,28 @@ class SaveCalculation {
       "total_working_hours": totalWorkingHours,
       "machine_hour_rate": machineHourRate,
     };
-    print(
-        'Request Body------------------------------------------: ${json.encode(requestBody)}'); // Log the full request body
-    // If category specific data is needed
+    if (kDebugMode) {
+      print(
+          'Request Body------------------------------------------: ${json.encode(requestBody)}');
+    }
+
     if (mainCatId == '1') {
       requestBody["power_consumption"] = powerConsumption;
       requestBody["power_cost_per_unit"] = powerCost;
     } else if (mainCatId == '2') {
       requestBody["fuel_cost_per_hour"] = fuelCost;
     }
-    print(
-        'Request Body------------------------------000000000000000000000: ${json.encode(requestBody)}'); // Log the full request body
-    // Print the request body for debugging
+    if (kDebugMode) {
+      print(
+          'Request Body------------------------------000000000000000000000: ${json.encode(requestBody)}');
+    }
     if (kDebugMode) {
       print("Request Body: $requestBody");
     }
-    print(
-        'Request Body-----------------------------------1: ${json.encode(requestBody)}'); // Log the full request body
+    if (kDebugMode) {
+      print(
+          'Request Body-----------------------------------1: ${json.encode(requestBody)}');
+    }
     try {
       final response = await http.post(
         Uri.parse('http://mhr.sitsolutions.co.in/save_calculation'),
@@ -478,20 +880,20 @@ class SaveCalculation {
       );
 
       if (response.statusCode == 200) {
-        // Handle success response
         if (kDebugMode) {
           print("Calculation Successfully Saved: ${response.body}");
         }
         print(
-            'Request Body--------------------------2: ${json.encode(requestBody)}'); // Log the full request body
-        onSuccessCallback();
+            'Request Body--------------------------saved: ${json.encode(requestBody)}'); // Log the full request body
+        if (context.mounted) {
+          onSuccessCallback();
+        }
         showTopSnackBar(context, "Calculation saved successfully!");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
         );
       } else {
-        // Handle the failure response
         if (kDebugMode) {
           print(
               "Failed to save calculation: ${response.statusCode} ${response.body}");
@@ -500,7 +902,6 @@ class SaveCalculation {
             "Failed to save data. Server returned status: ${response.statusCode}");
       }
     } catch (e) {
-      // Handle exception
       if (kDebugMode) {
         print("Error saving calculation: $e");
       }

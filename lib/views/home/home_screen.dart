@@ -5,8 +5,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:machine_hour_rate/models/calculationlistModel.dart';
+import 'package:machine_hour_rate/providers/auth_provider.dart';
 import 'package:machine_hour_rate/views/calculation/mhr_view_calculation.dart';
 import 'package:machine_hour_rate/views/calculation/updated_calculation.dart';
+import 'package:machine_hour_rate/views/home/guest_home.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -23,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isGuestUser = false;
   String userName = " ";
   List<CalculationListModel> calculations = [];
-  List<CalculationListModel> calList = [];
+  // List<CalculationListModel> calList = [];
   bool isLoading = true;
   Timer? _timer;
   bool showAll = false;
@@ -53,6 +56,16 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // void onUserLogin(String userId) async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   // Save user ID and status
+  //   await prefs.setString("userId", userId);
+  //   await prefs.setBool("isGuestUser", false);
+
+  //   // Fetch calculations for the logged-in user
+  //   fetchCalculations(userId: userId);
+  // }
+
   Future<void> _loadUserStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -60,15 +73,29 @@ class _HomeScreenState extends State<HomeScreen> {
       userName = isGuestUser
           ? "Guest User"
           : (prefs.getString("userName") ?? "Guest User");
+      // });
+      if (!isGuestUser) {
+        String? userId = prefs.getString("userId");
+        fetchCalculations(userId: userId);
+      } else {
+        fetchCalculations();
+      }
     });
   }
 
 // calculation list
-  Future<void> fetchCalculations() async {
-    final url = Uri.parse("https://mhr.sitsolutions.co.in/calculation_list");
+  Future<void> fetchCalculations({String? userId}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final url = Uri.parse("http://mhr.sitsolutions.co.in/calculation_list");
+    var userid = prefs.getString("user_id");
+    print("--------------log--------------$userid");
     try {
-      final response = await http.get(url);
-
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"user_id": userid}),
+      );
+      print("---------------------------list -----------${response.body}");
       if (kDebugMode) {
         print("Fetch Response Status Code: ${response.statusCode}");
       }
@@ -103,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          isLoading = false; // Stop loading
+          isLoading = false;
         });
       }
       if (kDebugMode) {
@@ -144,20 +171,27 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        title: const Text("Delete Calculation"),
-        content:
-            const Text("Are you sure you want to delete this calculation?"),
+        title: const Text(
+          "Delete Calculation",
+          style: TextStyle(color: Colors.black),
+        ),
+        content: const Text(
+          "Are you sure you want to delete this calculation?",
+          style: TextStyle(color: Colors.black, fontSize: 18),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: const Text("Cancel",
+                style: TextStyle(color: Colors.blue, fontSize: 18)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               deleteCalculation(id);
             },
-            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+            child: const Text("Delete",
+                style: TextStyle(color: Colors.red, fontSize: 18)),
           ),
         ],
       ),
@@ -172,8 +206,8 @@ class _HomeScreenState extends State<HomeScreen> {
       Map<String, dynamic> updatedData) async {
     Map<String, dynamic> jsonBody = {
       "id": id,
-      "currency_id": currencyId, // Fixed value
-      "subcat_id": subcatId, // Fixed value
+      "currency_id": currencyId,
+      "subcat_id": subcatId,
     };
     if (mainCatId == "1") {
       if (kDebugMode) {
@@ -446,17 +480,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   updatedData,
                 );
                 if (mounted) {
-                  await fetchCalculations(); // Refresh calculations
+                  await fetchCalculations();
                 }
                 Navigator.pop(context);
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        MHRCalScreen(), // Pass the updated calculation (if you want)
+                    builder: (context) => MHRCalScreen(),
                   ),
                 );
-                // Navigator.pop(context);
               },
               child: const Text(
                 "Update",
@@ -471,117 +503,136 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<CalculationListModel> displayedCalculations =
-        showAll ? calculations : calculations.take(10).toList();
-    if (kDebugMode) {
-      print(
-          "---------------After Save  Show-----------------$displayedCalculations");
-    }
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "All Calculations (${calculations.length})",
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      showAll = !showAll;
-                    });
-                  },
-                  child: Text(
-                    showAll ? "Collapse" : "View All",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: showAll ? Colors.red : Colors.blue,
-                    ),
+    return FutureBuilder<SharedPreferences>(
+      future: SharedPreferences.getInstance(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        SharedPreferences prefs = snapshot.data!;
+        String? userId = prefs.getString('user_id');
+        bool? guestUser = prefs.getBool("guest_user");
+
+        if (guestUser == true) {
+          return const GuestHome();
+        } else {
+          final authProvider = Provider.of<AuthProvider>(context);
+          final user = authProvider.userData;
+          List<CalculationListModel> displayedCalculations =
+              showAll ? calculations : calculations.take(10).toList();
+          return Scaffold(
+            backgroundColor: Colors.white,
+            body: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "All Calculations (${calculations.length})",
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            showAll = !showAll;
+                          });
+                        },
+                        child: Text(
+                          showAll ? "Collapse" : "View All",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: showAll ? Colors.red : Colors.blue,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            Expanded(
-              child: isLoading
-                  ? Center(child: _buildShimmerLoader())
-                  : calculations.isEmpty
-                      ? const Center(child: Text("No data available"))
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(5),
-                          itemCount: calculations.length,
-                          itemBuilder: (context, index) {
-                            final calculation = calculations[index];
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          MHRCalculatorsScreen()),
-                                );
-                              },
-                              child: Card(
-                                color: Colors.grey[100],
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                                elevation: 4,
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit,
-                                            color: Colors.blue),
-                                        onPressed: () {
-                                          _showEditDialog(calculation);
-                                        },
-                                      ),
-                                      Text(
-                                        "Calculation ${calculation.id}",
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          "${calculation.currencyId == 2 ? "*" : calculation.currencyId == 1 ? '\$' : ''} ${calculation.machineHourRate}",
-                                          style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.green),
-                                          textAlign: TextAlign.center,
+                  Expanded(
+                    child: isLoading
+                        ? Center(child: _buildShimmerLoader())
+                        : calculations.isEmpty
+                            ? const Center(child: Text("No data available"))
+                            : ListView.builder(
+                                padding: const EdgeInsets.all(5),
+                                itemCount: calculations.length,
+                                itemBuilder: (context, index) {
+                                  final calculation = calculations[index];
+                                  return InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                MHRCalculatorsScreen()),
+                                      );
+                                    },
+                                    child: Card(
+                                      color: Colors.grey[100],
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      elevation: 4,
+                                      margin: const EdgeInsets.symmetric(
+                                          vertical: 8),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.edit,
+                                                  color: Colors.blue),
+                                              onPressed: () {
+                                                _showEditDialog(calculation);
+                                              },
+                                            ),
+                                            Text(
+                                              "Calculation ${calculation.id}",
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            Expanded(
+                                              child: Text(
+                                                "${calculation.currencyId == 2 ? "*" : calculation.currencyId == 1 ? '\$' : ''} ${calculation.machineHourRate}",
+                                                style: const TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.green),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.close,
+                                                  color: Colors.red),
+                                              onPressed: () {
+                                                if (calculation.id != null) {
+                                                  confirmDelete(
+                                                      calculation.id!);
+                                                }
+                                              },
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      IconButton(
-                                        icon: const Icon(Icons.close,
-                                            color: Colors.red),
-                                        onPressed: () {
-                                          if (calculation.id != null) {
-                                            confirmDelete(calculation.id!);
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
+          );
+        }
+      },
     );
   }
 

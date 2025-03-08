@@ -81,7 +81,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     labelText: "First Name",
                     labelStyle: const TextStyle(color: Colors.black),
-                    hintText: "Enter your first name",
+                    // hintText: "Enter your first name",
                     errorText: validationErrors?['firstName'],
                     focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -106,8 +106,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     }
                     return null;
                   },
-                  // validator: (value) =>
-                  //     value!.isEmpty ? 'Enter your first name.' : null,
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
@@ -122,7 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     labelText: "Last Name",
                     labelStyle: const TextStyle(color: Colors.black),
-                    hintText: "Enter your last name",
+                    // hintText: "Enter your last name",
                     errorText: validationErrors?['lastName'],
                     focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -137,7 +135,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderSide: BorderSide(color: Colors.blue, width: 2.0),
                     ),
                   ),
-
                   validator: (value) {
                     if (value!.isEmpty) {
                       return 'Enter your last name.';
@@ -148,12 +145,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     }
                     return null;
                   },
-                  // validator: (value) {
-                  //   if (value == null || value.isEmpty) {
-                  //     return 'Enter your last name.';
-                  //   }
-                  //   return null;
-                  // },
                 ),
                 const SizedBox(height: 20),
                 const Row(
@@ -184,7 +175,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       labelText: "Mobile Number",
                       labelStyle: const TextStyle(color: Colors.black),
-                      hintText: "Enter mobile number",
+                      // hintText: "Enter mobile number",
                       errorText: validationErrors?['mobile'],
                       focusedBorder: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -236,7 +227,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     labelText: "Email (Optional)",
                     labelStyle: const TextStyle(color: Colors.black),
-                    hintText: "Enter your email",
+                    // hintText: "Enter your email",
                     errorText: validationErrors?['email'],
                     focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -338,7 +329,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => LoginScreen()),
+                              builder: (context) => const LoginScreen()),
                         );
                       },
                       child: const Row(
@@ -370,11 +361,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextButton(
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const HomePage()),
-                          ),
+                          onPressed: () async {
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            await prefs.setBool("guest_user", true);
+                            // await prefs.setBool("user_data", false);
+                            var guestUser = prefs.getBool("guest_user");
+                            print(
+                                "--------------------------------$guestUser"); // gg
+
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const HomePage()));
+                          },
                           child: const Text(
                             'Continue with Guest Account',
                             style: TextStyle(color: Colors.black),
