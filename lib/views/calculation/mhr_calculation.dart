@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:machine_hour_rate/core/db/database_helper.dart';
@@ -12,6 +13,7 @@ import 'package:machine_hour_rate/providers/calculationprovider.dart';
 import 'package:machine_hour_rate/views/home/home_page_view.dart';
 import 'package:machine_hour_rate/views/home/home_screen.dart';
 import 'package:machine_hour_rate/views/login/login_screen.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pdfLib;
@@ -103,11 +105,11 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
         "operating_hours": prefs.getString("operating_hours"),
         "working_days": prefs.getString("working_days"),
         "machine_hour_rate": prefs.getString("mhr"),
-        "depreciation": prefs.getString("depreciation"),
-        "power_costs": prefs.getString("power_costs"),
-        "operator_wages": prefs.getString("operator_wages"),
-        "total_cost_per_year": prefs.getString("total_cost_per_year"),
-        "total_working_hours": prefs.getString("total_working_hours"),
+        // "depreciation": prefs.getString("depreciation"),
+        // "power_costs": prefs.getString("power_costs"),
+        // "operator_wages": prefs.getString("operator_wages"),
+        // "total_cost_per_year": prefs.getString("total_cost_per_year"),
+        // "total_working_hours": prefs.getString("total_working_hours"),
       };
     });
     if (kDebugMode) {
@@ -119,6 +121,7 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
     }
   }
 
+//down load
   Future<void> _downloadPDF(BuildContext context, dynamic result) async {
     if (result.mhr == null || result.mhr!.isEmpty) {
       _showMessage(context, "Machine Hour Rate is empty!");
@@ -152,6 +155,9 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
               pdfLib.Text("Machine Hour Rate Overview",
                   style: const pdfLib.TextStyle(fontSize: 24)),
               pdfLib.SizedBox(height: 20),
+              pdfLib.Text("Calcultaion Result",
+                  style: const pdfLib.TextStyle(fontSize: 24)),
+              pdfLib.SizedBox(height: 20),
               //calculation
               pdfLib.Text("Machine Hour Rate: ${result.mhr}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
@@ -165,6 +171,9 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.Text("Total Working Hours: ${result.totalWorkingHours}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Input Values",
+                  style: const pdfLib.TextStyle(fontSize: 24)),
+              pdfLib.SizedBox(height: 20),
               // inpute
               pdfLib.Text(
                   "Maintenance Cost: ${storedValues['maintanance_cost']}",
@@ -202,31 +211,119 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
       ),
     );
 
-    await _savePDF(context, pdf, filePath);
+    await _savePDF(
+      context,
+      pdf,
+    );
   }
 
-  Future<void> _savePDF(
-      BuildContext context, pdfLib.Document pdf, String filePath) async {
+  // Future<void> _savePDF(
+  //     BuildContext context, pdfLib.Document pdf, String filePath) async {
+  //   try {
+  //     final file = File(filePath);
+  //     await file.writeAsBytes(await pdf.save());
+  //     _showMessage(context, "PDF saved at $filePath");
+  //   } catch (e) {
+  //     _showMessage(context, "Failed to save PDF: $e");
+  //     print("-------------download faild------------$e");
+  //   }
+  // }
+
+  // Future<void> _savePDF(
+  //     BuildContext context, pdfLib.Document pdf, String filePath) async {
+  //   try {
+  //     if (!await _requestStoragePermission()) {
+  //       _showMessage(context, "Storage permission denied!");
+  //       return;
+  //     }
+
+  //     // Get public Downloads directory
+  //     Directory downloadsDir = Directory("/storage/emulated/0/Download");
+
+  //     if (!downloadsDir.existsSync()) {
+  //       _showMessage(context, "Downloads folder not accessible!");
+  //       return;
+  //     }
+
+  //     String filePath = "${downloadsDir.path}/machine_hour_rate.pdf";
+  //     final file = File(filePath);
+  //     await file.writeAsBytes(await pdf.save());
+
+  //     _showMessage(context, "PDF saved at $filePath");
+
+  //     // Open the file after saving
+  //     OpenFilex.open(filePath);
+  //   } catch (e) {
+  //     _showMessage(context, "Failed to save PDF: $e");
+  //     print("Download failed: $e");
+  //   }
+  // }
+  Future<void> _savePDF(BuildContext context, pdfLib.Document pdf) async {
     try {
+      if (!await _requestStoragePermission()) {
+        _showMessage(context, "Storage permission denied!");
+        return;
+      }
+
+      // Define the path to the public Downloads folder
+      String downloadsPath =
+          "/storage/emulated/0/Download"; // Public Downloads folder
+      Directory downloadsDir = Directory(downloadsPath);
+
+      // Create the Downloads directory if it doesn't exist
+      if (!downloadsDir.existsSync()) {
+        downloadsDir.createSync(recursive: true);
+      }
+
+      // Define the file path
+      String filePath = "${downloadsDir.path}/machine_hour_rate.pdf";
       final file = File(filePath);
+
+      // Save the PDF
       await file.writeAsBytes(await pdf.save());
+
+      // Show a success message
       _showMessage(context, "PDF saved at $filePath");
+      print("PDF saved at $filePath");
+
+      // Open the file after saving
+      OpenFilex.open(filePath);
     } catch (e) {
       _showMessage(context, "Failed to save PDF: $e");
+      print("Download failed: $e");
     }
   }
 
   Future<bool> _requestStoragePermission() async {
     if (Platform.isAndroid) {
-      var status = await Permission.storage.request();
+      // Check the Android version to handle permissions accordingly
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final androidVersion = androidInfo.version.sdkInt;
 
-      if (status.isGranted) return true;
-
-      if (await Permission.manageExternalStorage.isGranted) return true;
-
-      return false;
+      if (androidVersion < 30) {
+        // Android 10 and below
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+          if (!status.isGranted) {
+            return false; // If permission is denied, return false
+          }
+        }
+        return true; // Permission granted
+      } else {
+        // Android 11 and above
+        var status = await Permission.manageExternalStorage.status;
+        if (!status.isGranted) {
+          status = await Permission.manageExternalStorage.request();
+          if (!status.isGranted) {
+            return false; // If permission is denied, return false
+          }
+        }
+        return true; // Permission granted
+      }
     }
-    return true;
+
+    return true; // Non-Android platforms don't need this
   }
 
   void _showMessage(BuildContext context, String message) {
@@ -603,7 +700,15 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
 
                                           if (userId == null &&
                                               guestUser == true) {
-                                            _showGuestDialog(context);
+                                            int currentCount =
+                                                await DatabaseHelper()
+                                                    .countGuestCalculations();
+                                            if (currentCount >= 10) {
+                                              // If limit is exceeded, show dialog
+                                              _showLimitExceededDialog(context);
+                                            } else {
+                                              _showGuestDialog(context);
+                                            }
                                           } else {
                                             await SaveCalculation(() {
                                               Navigator.of(context)
@@ -692,6 +797,12 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
 
   Future<void> saveDataForGuest(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    int currentCount = await DatabaseHelper().countGuestCalculations();
+
+    if (currentCount >= 10) {
+      _showLimitExceededDialog(context);
+      return;
+    }
 
     String? mainCatId = prefs.getString('main_cat_id');
 
@@ -755,6 +866,28 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
     }
   }
 
+  void _showLimitExceededDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text("Limit Exceeded"),
+          content: const Text(
+              "You can only save up to 10 calculations as a guest user."),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showGuestDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -777,9 +910,11 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
             ),
             TextButton(
               child: const Text("Log In / Register"),
-              onPressed: () {
+              onPressed: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
                 Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute(
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (context) => const LoginScreen()));
               },
             ),
@@ -818,15 +953,34 @@ class SaveCalculation {
     String? operatingHours = prefs.getString('operating_hours');
     String? workingDays = prefs.getString("working_days");
     String? depreciation = prefs.getString('depreciation');
-    String? powerCosts = prefs.getString('power_costs');
-    String? operatorWages = prefs.getString('operator_wages');
-    String? totalCostPerYear = prefs.getString('total_cost_per_year');
+    String? powerCosts = prefs.getString('power_costs'); //
+    String? operatorWages = prefs.getString('operator_wages'); //
+    String? totalCostPerYear = prefs.getString('total_cost_per_year'); //
     String? totalWorkingHours = prefs.getString('total_working_hours');
     String? machineHourRate = prefs.getString('mhr');
 
     String? powerConsumption = prefs.getString("power_consumption");
     String? powerCost = prefs.getString("power_cost");
     String? fuelCost = prefs.getString("fuel_cost_per_hour");
+
+    debugPrint("Maintenance Cost: $maintenanceCost");
+    debugPrint("Machine Purchase Price: $machinePurchasePrice");
+    debugPrint("Machine Life: $machineLife");
+    debugPrint("Salvage Value: $salvageValue");
+    debugPrint("Operator Wage: $operatorWage");
+    debugPrint("Consumable Cost: $consumableCost");
+    debugPrint("Factory Rent: $factoryRent");
+    debugPrint("Operating Hours: $operatingHours");
+    debugPrint("Working Days: $workingDays");
+    debugPrint("Depreciation: $depreciation");
+    debugPrint("Power Costs: $powerCosts");
+    debugPrint("Operator Wages: $operatorWages");
+    debugPrint("Total Cost Per Year: $totalCostPerYear");
+    debugPrint("Total Working Hours: $totalWorkingHours");
+    debugPrint("Machine Hour Rate: $machineHourRate");
+    debugPrint("Power Consumption: $powerConsumption");
+    debugPrint("Power Cost: $powerCost");
+    debugPrint("Fuel Cost Per Hour: $fuelCost");
 
     Map<String, dynamic> requestBody = {
       "main_cat_id": mainCatId,

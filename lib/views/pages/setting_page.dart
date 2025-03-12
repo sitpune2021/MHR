@@ -44,12 +44,55 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _loadUserStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      email = prefs.getString("user_email") ?? "user@example.com";
-      mobile = prefs.getString("user_mobile") ?? "+91 9876543210";
-      name = prefs.getString("user_name") ?? "Guest User ";
-      isGuestUser = prefs.getBool("is_logged_in") ?? false;
+      isGuestUser = prefs.getBool("isLoggedGuestUser") ?? false;
+
+      if (isGuestUser) {
+        // Explicitly set guest user details here
+        name = "Guest User";
+        // email = "";
+        // mobile = "";
+      } else {
+        // Load actual user details for logged in users
+        name = prefs.getString("user_name") ?? " ";
+        email = prefs.getString("user_email") ?? "";
+        mobile = prefs.getString("user_mobile") ?? "";
+      }
     });
   }
+  // Future<void> _loadUserStatus() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   setState(() {
+  //     // email = prefs.getString("user_email") ?? "user@example.com";
+  //     // mobile = prefs.getString("user_mobile") ?? "+91 9876543210";
+  //     // name = prefs.getString("user_name") ?? "Guest User ";
+  //     // isGuestUser = prefs.getBool("is_logged_in") ?? false;
+  //     isGuestUser = prefs.getBool("isLoggedGuestUser") ?? false;
+  //     if (isGuestUser) {
+  //       name = "Guest User";
+  //     } else {
+  //       // Use default guest values if not logged in
+  //       // email = "guest@example.com";
+  //       // mobile = "+91 9876543210";
+
+  //       email = prefs.getString("user_email") ?? "";
+  //       mobile = prefs.getString("user_mobile") ?? "";
+  //       name = prefs.getString("user_name") ?? " ";
+  //     }
+  //   });
+  // setState(() {
+  //   isGuestUser = prefs.getBool("isGuestUser") ?? false;
+  //   name = isGuestUser
+  //       ? "Guest User"
+  //       : (prefs.getString("user_name") ?? "Guest User");
+  //   // });
+  //   if (!isGuestUser) {
+  //     String? userId = prefs.getString("userId");
+  //     fetchCalculations(userId: userId);
+  //   } else {
+  //     fetchCalculations();
+  //   }
+  // });
+  // }
 
   Future<void> _loadAppVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -150,7 +193,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    await _removeImage();
+    // await _removeImage();
     Navigator.pushReplacement(context,
         MaterialPageRoute(builder: (context) => const RegisterScreen()));
   }
@@ -286,22 +329,22 @@ class _SettingsPageState extends State<SettingsPage> {
                                     ),
                                   ),
                                 ),
-                              Positioned(
-                                bottom: 5,
-                                right: 0.1,
-                                child: GestureDetector(
-                                  onTap: _pickImage,
-                                  child: const CircleAvatar(
-                                    radius: 12,
-                                    backgroundColor: Colors.blue,
-                                    child: Icon(
-                                      Icons.camera_alt,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              // Positioned(
+                              //   bottom: 5,
+                              //   right: 0.1,
+                              //   child: GestureDetector(
+                              //     onTap: _pickImage,
+                              //     child: const CircleAvatar(
+                              //       radius: 12,
+                              //       backgroundColor: Colors.blue,
+                              //       child: Icon(
+                              //         Icons.camera_alt,
+                              //         color: Colors.white,
+                              //         size: 18,
+                              //       ),
+                              //     ),
+                              //   ),
+                              // ),
                             ],
                           ),
                           const SizedBox(height: 20),
@@ -330,52 +373,57 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          if (user?.email != null && user!.email!.isNotEmpty)
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 20, right: 20),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    "Email : ",
-                                    style: TextStyle(
-                                        fontSize: 16, color: Colors.blue),
-                                  ),
-                                  Flexible(
-                                    child: Text(
-                                      "${user.email}",
-                                      style: const TextStyle(
-                                          fontSize: 14, color: Colors.black),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
+                          if (!isGuestUser) ...[
+                            if (user?.email != null && user!.email!.isNotEmpty)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 20, right: 20),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "Email : ",
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.blue),
                                     ),
-                                  ),
-                                ],
+                                    Flexible(
+                                      child: Text(
+                                        "${user.email}",
+                                        style: const TextStyle(
+                                            fontSize: 14, color: Colors.black),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
+                          ],
                           const SizedBox(height: 2),
-                          if (user?.mobile != null && user!.mobile!.isNotEmpty)
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 20, right: 20),
-                              child: Row(
-                                children: [
-                                  const Text(
-                                    "Mobile : ",
-                                    style: TextStyle(
-                                        fontSize: 16, color: Colors.blue),
-                                  ),
-                                  Text(
-                                    "${user.mobile}",
-                                    style: const TextStyle(
-                                        fontSize: 16, color: Colors.black),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
-                                  ),
-                                ],
+                          if (!isGuestUser) ...[
+                            if (user?.mobile != null &&
+                                user!.mobile!.isNotEmpty)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 20, right: 20),
+                                child: Row(
+                                  children: [
+                                    const Text(
+                                      "Mobile : ",
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.blue),
+                                    ),
+                                    Text(
+                                      "${user.mobile}",
+                                      style: const TextStyle(
+                                          fontSize: 16, color: Colors.black),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
+                          ]
                         ],
                       ),
                     ),
@@ -419,21 +467,20 @@ class _SettingsPageState extends State<SettingsPage> {
                                         fontWeight: FontWeight.bold)),
                               ),
                             ),
-                            if (!widget.isGuestUser) ...[
-                              const Divider(
-                                  thickness: 1, indent: 20, endIndent: 20),
-                              InkWell(
-                                onTap: _confirmLogout,
-                                child: const ListTile(
-                                  leading:
-                                      Icon(Icons.login, color: Colors.blue),
-                                  title: Text("Log Out",
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold)),
-                                ),
+                            const Divider(
+                                thickness: 1, indent: 20, endIndent: 20),
+                            InkWell(
+                              onTap: _confirmLogout,
+                              child: const ListTile(
+                                leading: Icon(Icons.login, color: Colors.blue),
+                                title: Text("Log Out",
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold)),
                               ),
+                            ),
+                            if (!isGuestUser) ...[
                               const Divider(
                                   thickness: 1, indent: 20, endIndent: 20),
                               InkWell(

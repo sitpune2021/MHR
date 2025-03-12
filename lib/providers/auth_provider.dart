@@ -127,7 +127,9 @@ class AuthProvider extends ChangeNotifier {
         if (kDebugMode) {
           print("User Data: ${_userData?.toJson()}");
         }
-        print("---------------------------jhg---------$response");
+        if (kDebugMode) {
+          print("---------------------------jhg---------$response");
+        }
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString("user_data", jsonEncode(response["details"]));
         notifyListeners();
@@ -139,7 +141,7 @@ class AuthProvider extends ChangeNotifier {
           response["errors"] is Map<String, dynamic>) {
         _validationErrors = response["errors"].cast<String, String>();
       } else {
-        _validationErrors = {}; // Assign an empty map if there are no errors
+        _validationErrors = {};
       }
       notifyListeners();
       if (response.containsKey("message")) {
@@ -151,15 +153,5 @@ class AuthProvider extends ChangeNotifier {
       return response["message"];
     }
     return null;
-  }
-
-  Future<void> logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("user_data");
-    await prefs.remove("isGuestUser");
-    await prefs.getBool("guest_user");
-    await prefs.clear();
-    _userData = null;
-    notifyListeners();
   }
 }

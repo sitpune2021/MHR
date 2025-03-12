@@ -26,6 +26,7 @@ class DatabaseHelper {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           main_cat_id TEXT,
           currency_id TEXT,
+          user_id TEXT,
           currency_amount TEXT,
           subcat_id TEXT,
           maintanance_cost TEXT,
@@ -60,9 +61,37 @@ class DatabaseHelper {
     return await db.insert('calculations', data);
   }
 
+  // Future<List<Map<String, dynamic>>> getCalculations() async {
+  //   final db = await database;
+  //   return await db.query('calculations');
+  // }
+
+  // Updated method to sort calculations by id in descending order
   Future<List<Map<String, dynamic>>> getCalculations() async {
     final db = await database;
-    return await db.query('calculations');
+    return await db.query(
+      'calculations',
+      orderBy: 'id DESC', // Sort by id in descending order
+    );
+  }
+
+  Future<int> countGuestCalculations() async {
+    final db = await database; // Get the database instance
+    List<Map<String, dynamic>> result = await db.rawQuery(
+        'SELECT COUNT(*) FROM calculations'); // Assuming guest users have a NULL user_id
+
+    if (result.isNotEmpty) {
+      return Sqflite.firstIntValue(result) ?? 0; // Returns the count
+    }
+    return 0; // Return 0 if there are no entries
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // Example: Add user_id to calculations table
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE calculations ADD COLUMN user_id TEXT');
+    }
+    // Handle further upgrades if needed.
   }
 
   Future<Map<String, dynamic>?> getCalculationById(int id) async {

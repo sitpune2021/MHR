@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:machine_hour_rate/views/calculation/guest_calculation_view.dart';
-import '../../core/db/database_helper.dart'; // Import your DatabaseHelper
+import '../../core/db/database_helper.dart';
 
 class GuestHome extends StatefulWidget {
   const GuestHome({super.key});
@@ -48,19 +49,19 @@ class _GuestHomeState extends State<GuestHome> {
                           itemCount: calculations.length,
                           itemBuilder: (context, index) {
                             final calculation = calculations[index];
-                            final cal_id = calculations[index]["id"];
+                            final calId = calculations[index]["id"];
 
                             return GestureDetector(
                               onTap: () {
                                 print(
-                                    "-------------------calcution id-----------${cal_id}");
+                                    "-------------------calcution id-----------$calId");
 
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>
                                           MHRGuestCalculatorsScreen(
-                                            viewid: cal_id ?? "", //----------
+                                            viewid: calId ?? "",
                                           )),
                                 );
                               },
@@ -75,20 +76,20 @@ class _GuestHomeState extends State<GuestHome> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit,
-                                            color: Colors.blue),
-                                        onPressed: () {},
-                                      ),
-                                      Text(
-                                        "Calculation ${calculation['id']}",
-                                        style: const TextStyle(
+                                      // IconButton(
+                                      //   icon: const Icon(Icons.edit,
+                                      //       color: Colors.blue),
+                                      //   onPressed: () {},
+                                      // ),
+                                      const Text(
+                                        "Calculation",
+                                        style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold),
                                       ),
                                       Expanded(
                                         child: Text(
-                                          "${calculation['currency_id'] == '2' ? "*" : calculation['currency_id'] == '1' ? '\$' : ''} ${calculation['machine_hour_rate']}",
+                                          "${calculation['currency_id'] == '3' ? "€" : calculation['currency_id'] == '2' ? "\$" : calculation['currency_id'] == '1' ? '₹' : ''} ${calculation['machine_hour_rate']}",
                                           style: const TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
@@ -100,8 +101,10 @@ class _GuestHomeState extends State<GuestHome> {
                                         icon: const Icon(Icons.close,
                                             color: Colors.red),
                                         onPressed: () {
-                                          print(
-                                              "---------------------------${calculation['id']}");
+                                          if (kDebugMode) {
+                                            print(
+                                                "---------------------------${calculation['id']}");
+                                          }
                                           _deleteCalculation(calculation['id']);
                                         },
                                       ),

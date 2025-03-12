@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:machine_hour_rate/providers/auth_provider.dart';
 import 'package:machine_hour_rate/views/home/home_page_view.dart';
 import 'package:machine_hour_rate/views/login/login_screen.dart';
 import 'package:machine_hour_rate/views/login/verification_screen.dart';
+import 'package:machine_hour_rate/views/pages/privacy_page.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -268,7 +270,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         });
                       },
                     ),
-                    const Text("I agree with privacy policy"),
+                    // const Text("I agree with privacy policy"),
+                    RichText(
+                        text: TextSpan(
+                      children: [
+                        const TextSpan(
+                          text: "I agree with the ",
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        TextSpan(
+                          text: "Privacy Policy",
+                          style: const TextStyle(
+                            color: Colors.blue, // Hyperlink color
+                            decoration: TextDecoration
+                                .underline, // Underline text for hyperlink
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () => _PrivacyPolicy(context),
+                          // Action on tap
+                        ),
+                      ],
+                    ))
                   ],
                 ),
                 authProvider.isLoading
@@ -365,12 +387,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             SharedPreferences prefs =
                                 await SharedPreferences.getInstance();
                             await prefs.setBool("guest_user", true);
+                            await prefs.setBool("isLoggedGuestUser", true);
                             // await prefs.setBool("user_data", false);
                             var guestUser = prefs.getBool("guest_user");
                             print(
                                 "--------------------------------$guestUser"); // gg
 
-                            Navigator.push(
+                            Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => const HomePage()));
@@ -442,5 +465,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             .showSnackBar(SnackBar(content: Text(errorMessage.toString())));
       }
     }
+  }
+
+  void _PrivacyPolicy(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+    );
   }
 }

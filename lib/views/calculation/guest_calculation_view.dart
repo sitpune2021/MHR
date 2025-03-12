@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:machine_hour_rate/core/db/database_helper.dart';
-import 'package:machine_hour_rate/core/theme/colors.dart';
 import 'package:machine_hour_rate/models/mainmachineModel.dart';
 import 'package:pie_chart/pie_chart.dart';
 
@@ -471,7 +470,7 @@ class _MHRGuestCalculatorsScreenState extends State<MHRGuestCalculatorsScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Stack(
+                      const Stack(
                         children: [
                           SizedBox(
                             width: double.infinity,
@@ -480,23 +479,23 @@ class _MHRGuestCalculatorsScreenState extends State<MHRGuestCalculatorsScreen> {
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
                                   //pdf download
-                                  ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 100.0, vertical: 12.0),
-                                      backgroundColor: kButtonColor,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(20.0),
-                                      ),
-                                    ),
-                                    onPressed: () {},
-                                    //  => _downloadPDF(
-                                    //     context, currentCalculation),
-                                    icon: const Icon(Icons.download),
-                                    label: const Text("Download"),
-                                  ),
+                                  // ElevatedButton.icon(
+                                  //   style: ElevatedButton.styleFrom(
+                                  //     padding: const EdgeInsets.symmetric(
+                                  //         horizontal: 100.0, vertical: 12.0),
+                                  //     backgroundColor: kButtonColor,
+                                  //     foregroundColor: Colors.white,
+                                  //     shape: RoundedRectangleBorder(
+                                  //       borderRadius:
+                                  //           BorderRadius.circular(20.0),
+                                  //     ),
+                                  //   ),
+                                  //   onPressed: () {},
+                                  //   //  => _downloadPDF(
+                                  //   //     context, currentCalculation),
+                                  //   icon: const Icon(Icons.download),
+                                  //   label: const Text("Download"),
+                                  // ),
                                 ]),
                           ),
                         ],

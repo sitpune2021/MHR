@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:machine_hour_rate/core/theme/colors.dart';
@@ -15,6 +16,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:open_filex/open_filex.dart';
 
 class MHRCalculatorsScreen extends StatefulWidget {
   final String viewid;
@@ -70,70 +72,6 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
       }
     });
   }
-
-  // calculation list
-  // Future<void> fetchCalculationsView({String? userId}) async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   final url = Uri.parse("http://mhr.sitsolutions.co.in/view_calculation");
-  //   var userid = prefs.getString("user_id");
-  //   print("--------------------------------------viewid ${widget.viewid}");
-  //   try {
-  //     final response = await http.post(
-  //       url,
-  //       headers: {"Content-Type": "application/json"},
-  //       body: jsonEncode({
-  //         "user_id": userid,
-  //         "id": widget.viewid,
-  //       }),
-  //     );
-
-  //     if (kDebugMode) {
-  //       print("Fetch Response Status Code: ${response.statusCode}");
-  //     }
-  //     if (response.statusCode == 200) {
-  //       final jsonData = json.decode(response.body);
-  //       if (jsonData["status"] == "success") {
-  //         List<Map<String, dynamic>> details = jsonData["details"];
-  //         print("--------------calcution view data-----------$jsonData");
-  //         print("--------------calcution details-----------$details");
-
-  //         List<CalculationListModel> fetchedCalculations = details
-  //             .map((item) => CalculationListModel.fromJson(item))
-  //             .toList();
-
-  //         if (mounted) {
-  //           setState(() {
-  //             calculationss = fetchedCalculations;
-  //             isLoading = false;
-  //             currentCalculation =
-  //                 calculationss.isNotEmpty ? calculationss[0] : null;
-  //           });
-
-  //           if (kDebugMode) {
-  //             print("Updated calculations count: ${calculationss.length}");
-  //           }
-  //         }
-  //       } else {
-  //         if (kDebugMode) {
-  //           print("Failed to load calculations: ${jsonData['message']}");
-  //         }
-  //       }
-  //     } else {
-  //       if (kDebugMode) {
-  //         print("Failed to load data, status code: ${response.statusCode}");
-  //       }
-  //     }
-  //   } catch (e) {
-  //     if (mounted) {
-  //       setState(() {
-  //         isLoading = false; // Stop loading
-  //       });
-  //     }
-  //     if (kDebugMode) {
-  //       print("Error fetching calculations: $e");
-  //     }
-  //   }
-  // }
 
   Future<void> fetchCalculationsView({String? userId}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -234,49 +172,62 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
               pdfLib.Text("Machine Hour Rate Overview",
                   style: const pdfLib.TextStyle(fontSize: 24)),
               pdfLib.SizedBox(height: 20),
+              pdfLib.Text("Calculation Result",
+                  style: const pdfLib.TextStyle(fontSize: 24)),
+              pdfLib.SizedBox(height: 10),
               //calculation
               pdfLib.Text(
                   "Machine Hour Rate: ${currentCalculation!.machineHourRate}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Depreciation: ${result.depreciation}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Power Cost: ${result.powerCost}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Operator Wages: ${result.operatorWages}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Total Cost Per Year: ${result.totalCostPerYear}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Total Working Hours: ${result.totalWorkingHours}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Depreciation: ${currentCalculation!.depreciation}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Power Cost: ${currentCalculation!.powerCost}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Operator Wages: ${currentCalculation!.operatorWages}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Total Cost Per Year: ${currentCalculation!.totalCostPerYear}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Total Working Hours: ${currentCalculation!.totalWorkingHours}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.SizedBox(height: 20),
               // inpute
-              // pdfLib.Text(
-              //     "Maintenance Cost: ${storedValues['maintanance_cost']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text(
-              //     "Machine Purchase Price: ${storedValues['machine_purchase_price']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Machine Life: ${storedValues['machine_life']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Salvage Value: ${storedValues['salvage_value']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text(
-              //     "Power Consumption: ${storedValues['power_consumption'] ?? '0'}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Power Cost: ${storedValues['power_cost'] ?? '0'}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text(
-              //     "Fuel Cost: ${storedValues['fuel_cost_per_hour'] ?? '0'}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Operator Wage: ${storedValues['operator_wage']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Consumable Cost: ${storedValues['consumable_cost']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Factory Rent: ${storedValues['factory_rent']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Operating Hours: ${storedValues['operating_hours']}",
-              //     style: const pdfLib.TextStyle(fontSize: 20)),
-              // pdfLib.Text("Working Days: ${storedValues['working_days']}",
-              // style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Calculation User Input Values",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.SizedBox(height: 10),
+              pdfLib.Text(
+                  "Maintenance Cost: ${currentCalculation!.maintananceCost}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Machine Purchase Price: ${currentCalculation!.machinePurchasePrice}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Machine Life: ${currentCalculation!.machineLife}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Salvage Value: ${currentCalculation!.salvageValue}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Power Consumption: ${currentCalculation!.powerConsumption ?? '0'}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Power Cost: ${currentCalculation!.powerCostPerUnit ?? '0'}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Fuel Cost: ${currentCalculation!.fuelCostPerHour ?? '0'} ",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Operator Wage: ${currentCalculation!.operatorWage}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Consumable Cost: ${currentCalculation!.consumableCost}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Factory Rent: ${currentCalculation!.factoryRent}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text(
+                  "Operating Hours: ${currentCalculation!.operatingHours}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
+              pdfLib.Text("Working Days: ${currentCalculation!.workingDays}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.SizedBox(height: 10),
               pdfLib.Text("Generated on: ${DateTime.now()}"),
             ],
@@ -285,31 +236,135 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
       ),
     );
 
-    await _savePDF(context, pdf, filePath);
+    await _savePDF(
+      context,
+      pdf,
+    );
   }
 
-  Future<void> _savePDF(
-      BuildContext context, pdfLib.Document pdf, String filePath) async {
+  Future<void> _savePDF(BuildContext context, pdfLib.Document pdf) async {
     try {
+      if (!await _requestStoragePermission()) {
+        _showMessage(context, "Storage permission denied!");
+        return;
+      }
+
+      // Define the path to the public Downloads folder
+      String downloadsPath =
+          "/storage/emulated/0/Download"; // Public Downloads folder
+      Directory downloadsDir = Directory(downloadsPath);
+
+      // Create the Downloads directory if it doesn't exist
+      if (!downloadsDir.existsSync()) {
+        downloadsDir.createSync(recursive: true);
+      }
+
+      // Define the file path
+      String filePath = "${downloadsDir.path}/machine_hour_rate.pdf";
       final file = File(filePath);
+
+      // Save the PDF
       await file.writeAsBytes(await pdf.save());
+
+      // Show a success message
       _showMessage(context, "PDF saved at $filePath");
+      print("PDF saved at $filePath");
+
+      // Open the file after saving
+      OpenFilex.open(filePath);
     } catch (e) {
       _showMessage(context, "Failed to save PDF: $e");
+      print("Download failed: $e");
     }
   }
 
+  // Future<bool> _requestStoragePermission() async {
+  //   if (Platform.isAndroid) {
+  //     // For Android 10 and below
+  //     var status = await Permission.storage.status;
+  //     if (!status.isGranted) {
+  //       status = await Permission.storage.request();
+  //     }
+
+  //     // For Android 11 and above
+  //     if (await Permission.manageExternalStorage.isGranted) {
+  //       return true;
+  //     } else {
+  //       var status = await Permission.manageExternalStorage.request();
+  //       return status.isGranted;
+  //     }
+  //   }
+  //   return true; // For non-Android platforms
+  // }
+  // Future<bool> _requestStoragePermission() async {
+  //   if (Platform.isAndroid) {
+  //     // Check if storage permissions are granted
+  //     var status = await Permission.storage.status;
+  //     if (!status.isGranted) {
+  //       status = await Permission.storage.request();
+  //       if (!status.isGranted) {
+  //         return false; // If permission is denied, return false
+  //       }
+  //     }
+
+  //     // For Android 11 and above, handle the manage external storage permission
+  //     if (Platform.version.startsWith('10')) {
+  //       var manageStatus = await Permission.manageExternalStorage.status;
+  //       if (!manageStatus.isGranted) {
+  //         manageStatus = await Permission.manageExternalStorage.request();
+  //         return manageStatus
+  //             .isGranted; // Return whether permission was granted
+  //       }
+  //     }
+  //     return true; // Permission is granted
+  //   }
+  //   return true; // Non-Android platforms don't need this
+  // }
+
+  // Future<bool> _requestStoragePermission() async {
+  //   if (Platform.isAndroid) {
+  //     // Check if storage permissions are granted
+  //     var status = await Permission.storage.status;
+  //     if (!status.isGranted) {
+  //       status = await Permission.storage.request();
+  //       if (!status.isGranted) {
+  //         return false; // If permission is denied, return false
+  //       }
+  //     }
+  //     return true; // Permission is granted
+  //   }
+  //   return true; // Non-Android platforms don't need this
+  // }
   Future<bool> _requestStoragePermission() async {
     if (Platform.isAndroid) {
-      var status = await Permission.storage.request();
+      // Check the Android version to handle permissions accordingly
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final androidVersion = androidInfo.version.sdkInt;
 
-      if (status.isGranted) return true;
-
-      if (await Permission.manageExternalStorage.isGranted) return true;
-
-      return false;
+      if (androidVersion < 30) {
+        // Android 10 and below
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+          if (!status.isGranted) {
+            return false; // If permission is denied, return false
+          }
+        }
+        return true; // Permission granted
+      } else {
+        // Android 11 and above
+        var status = await Permission.manageExternalStorage.status;
+        if (!status.isGranted) {
+          status = await Permission.manageExternalStorage.request();
+          if (!status.isGranted) {
+            return false; // If permission is denied, return false
+          }
+        }
+        return true; // Permission granted
+      }
     }
-    return true;
+
+    return true; // Non-Android platforms don't need this
   }
 
   void _showMessage(BuildContext context, String message) {

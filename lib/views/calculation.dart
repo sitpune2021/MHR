@@ -1,5 +1,9 @@
+// ignore_for_file: deprecated_member_use
+
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:machine_hour_rate/core/theme/colors.dart';
 import 'package:machine_hour_rate/models/currencyModel.dart';
 import 'package:machine_hour_rate/models/machine_categoriesModel.dart';
@@ -323,230 +327,241 @@ class _CalculationSheetState extends State<CalculationSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: RefreshIndicator(
-        color: kBackgroundColor,
+    return WillPopScope(
+      onWillPop: () async {
+        // if (Navigator.canPop(context)) {
+        //   Navigator.pop(context);
+        //   return false;
+        // }
+        SystemNavigator.pop();
+        return false;
+      },
+      child: Scaffold(
         backgroundColor: Colors.white,
-        onRefresh: _refreshData,
-        child: Column(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                  left: 16,
-                  right: 16,
-                ),
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: 10),
-                        _buildCurrency(),
-                        _buildMachine(),
-                        selectedMachine != null
-                            ? _buildMachineCate()
-                            : Container(),
-                        selectedCategory != null
-                            ? _buildMachineSub()
-                            : Container(),
-                        // _buildTextField(
-                        //     'Maintenance Cost per Year (MC) (Rs)',
-                        //     _maintenanceCostController,
-                        //     TextInputType.number,
-                        //     _validateInput,
+        body: RefreshIndicator(
+          color: kBackgroundColor,
+          backgroundColor: Colors.white,
+          onRefresh: _refreshData,
+          child: Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                    left: 16,
+                    right: 16,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: 10),
+                          _buildCurrency(),
+                          _buildMachine(),
+                          selectedMachine != null
+                              ? _buildMachineCate()
+                              : Container(),
+                          selectedCategory != null
+                              ? _buildMachineSub()
+                              : Container(),
+                          // _buildTextField(
+                          //     'Maintenance Cost per Year (MC) (Rs)',
+                          //     _maintenanceCostController,
+                          //     TextInputType.number,
+                          //     _validateInput,
 
-                        //     ),
-                        // _buildTextField(
-                        //     'Machine Purchase Price (MP) (Rs)',
-                        //     _machinePriceController,
-                        //     TextInputType.number,
-                        //     _validateInput),
-                        // _buildTextField(
-                        //     'Machine Life in Years (L) (Yrs)',
-                        //     _machineLifeController,
-                        //     TextInputType.number,
-                        //     _validateInput),
-                        // _buildTextField(
-                        //     'Salvage Value (S) (Rs)',
-                        //     _salvageValueController,
-                        //     TextInputType.number,
-                        //     _validateInput),
-                        // // Power Consumption & Power Cost only if selectedMachineId == 1
-                        // if (selectedMachineId == '1') ...[
-                        //   _buildTextField(
-                        //       'Power Consumption per Hour (PC) (Kw)',
-                        //       _powerConsumptionController,
-                        //       TextInputType.number,
-                        //       _validateInput),
-                        //   _buildTextField(
-                        //       'Power Cost per Unit (PU) (Rs)',
-                        //       _powerCostController,
-                        //       TextInputType.number,
-                        //       _validateInput),
-                        // ],
-                        // // Fuel Cost only if selectedMachineId == 2
-                        // if (selectedMachineId == '2')
-                        //   _buildTextField(
-                        //       'Fuel Cost (PH) (Rs)',
-                        //       _fuelCostController,
-                        //       TextInputType.number,
-                        //       _validateInput),
-                        // _buildTextField(
-                        //     'Operator Wage per Hour (OW) (Rs)',
-                        //     _operatorWageController,
-                        //     TextInputType.number,
-                        //     _validateInput),
-                        // _buildTextField(
-                        //     'Consumables Cost per Year (CC) (Rs)',
-                        //     _consumableCostController,
-                        //     TextInputType.number,
-                        //     _validateInput),
-                        // _buildTextField(
-                        //     'Factory Rent/Overheads per Year (RA) (Rs)',
-                        //     _factoryRentController,
-                        //     TextInputType.number,
-                        //     _validateInput),
-                        // _buildTextField(
-                        //     'Operating Hours per Day (H) (Hr)',
-                        //     _operatingHoursController,
-                        //     TextInputType.number,
-                        //     _validateInput),
-                        // _buildTextField(
-                        //     'Working Days per Year (D) (Days))',
-                        //     _workingDaysController,
-                        //     TextInputType.number,
-                        //     _validateInput),
-                        _buildTextField(
-                          'Maintenance Cost per Year (MC) (Rs)',
-                          _maintenanceCostController,
-                          TextInputType.number,
-                          _validateInput,
-                          focusNode: _maintenanceCostFocusNode,
-                          nextFocusNode: _machinePriceFocusNode,
-                        ),
-                        _buildTextField(
-                          'Machine Purchase Price (MP) (Rs)',
-                          _machinePriceController,
-                          TextInputType.number,
-                          _validateInput,
-                          focusNode: _machinePriceFocusNode,
-                          nextFocusNode: _machineLifeFocusNode,
-                        ),
-                        _buildTextField(
-                          'Machine Life in Years (L) (Yrs)',
-                          _machineLifeController,
-                          TextInputType.number,
-                          _validateInput,
-                          focusNode: _machineLifeFocusNode,
-                          nextFocusNode: _salvageValueFocusNode,
-                        ),
-                        _buildTextField(
-                          'Salvage Value (S) (Rs)',
-                          _salvageValueController,
-                          TextInputType.number,
-                          _validateInput,
-                          focusNode: _salvageValueFocusNode,
-                          nextFocusNode: _powerConsumptionFocusNode,
-                        ),
-                        if (selectedMachineId == '1') ...[
+                          //     ),
+                          // _buildTextField(
+                          //     'Machine Purchase Price (MP) (Rs)',
+                          //     _machinePriceController,
+                          //     TextInputType.number,
+                          //     _validateInput),
+                          // _buildTextField(
+                          //     'Machine Life in Years (L) (Yrs)',
+                          //     _machineLifeController,
+                          //     TextInputType.number,
+                          //     _validateInput),
+                          // _buildTextField(
+                          //     'Salvage Value (S) (Rs)',
+                          //     _salvageValueController,
+                          //     TextInputType.number,
+                          //     _validateInput),
+                          // // Power Consumption & Power Cost only if selectedMachineId == 1
+                          // if (selectedMachineId == '1') ...[
+                          //   _buildTextField(
+                          //       'Power Consumption per Hour (PC) (Kw)',
+                          //       _powerConsumptionController,
+                          //       TextInputType.number,
+                          //       _validateInput),
+                          //   _buildTextField(
+                          //       'Power Cost per Unit (PU) (Rs)',
+                          //       _powerCostController,
+                          //       TextInputType.number,
+                          //       _validateInput),
+                          // ],
+                          // // Fuel Cost only if selectedMachineId == 2
+                          // if (selectedMachineId == '2')
+                          //   _buildTextField(
+                          //       'Fuel Cost (PH) (Rs)',
+                          //       _fuelCostController,
+                          //       TextInputType.number,
+                          //       _validateInput),
+                          // _buildTextField(
+                          //     'Operator Wage per Hour (OW) (Rs)',
+                          //     _operatorWageController,
+                          //     TextInputType.number,
+                          //     _validateInput),
+                          // _buildTextField(
+                          //     'Consumables Cost per Year (CC) (Rs)',
+                          //     _consumableCostController,
+                          //     TextInputType.number,
+                          //     _validateInput),
+                          // _buildTextField(
+                          //     'Factory Rent/Overheads per Year (RA) (Rs)',
+                          //     _factoryRentController,
+                          //     TextInputType.number,
+                          //     _validateInput),
+                          // _buildTextField(
+                          //     'Operating Hours per Day (H) (Hr)',
+                          //     _operatingHoursController,
+                          //     TextInputType.number,
+                          //     _validateInput),
+                          // _buildTextField(
+                          //     'Working Days per Year (D) (Days))',
+                          //     _workingDaysController,
+                          //     TextInputType.number,
+                          //     _validateInput),
                           _buildTextField(
-                            'Power Consumption per Hour (PC) (Kw)',
-                            _powerConsumptionController,
+                            'Maintenance Cost per Year (MC) (Rs)',
+                            _maintenanceCostController,
                             TextInputType.number,
                             _validateInput,
-                            focusNode: _powerConsumptionFocusNode,
-                            nextFocusNode: _powerCostFocusNode,
+                            focusNode: _maintenanceCostFocusNode,
+                            nextFocusNode: _machinePriceFocusNode,
                           ),
                           _buildTextField(
-                            'Power Cost per Unit (PU) (Rs)',
-                            _powerCostController,
+                            'Machine Purchase Price (MP) (Rs)',
+                            _machinePriceController,
                             TextInputType.number,
                             _validateInput,
-                            focusNode: _powerCostFocusNode,
+                            focusNode: _machinePriceFocusNode,
+                            nextFocusNode: _machineLifeFocusNode,
+                          ),
+                          _buildTextField(
+                            'Machine Life in Years (L) (Yrs)',
+                            _machineLifeController,
+                            TextInputType.number,
+                            _validateInput,
+                            focusNode: _machineLifeFocusNode,
+                            nextFocusNode: _salvageValueFocusNode,
+                          ),
+                          _buildTextField(
+                            'Salvage Value (S) (Rs)',
+                            _salvageValueController,
+                            TextInputType.number,
+                            _validateInput,
+                            focusNode: _salvageValueFocusNode,
+                            nextFocusNode: _powerConsumptionFocusNode,
+                          ),
+                          if (selectedMachineId == '1') ...[
+                            _buildTextField(
+                              'Power Consumption per Hour (PC) (Kw)',
+                              _powerConsumptionController,
+                              TextInputType.number,
+                              _validateInput,
+                              focusNode: _powerConsumptionFocusNode,
+                              nextFocusNode: _powerCostFocusNode,
+                            ),
+                            _buildTextField(
+                              'Power Cost per Unit (PU) (Rs)',
+                              _powerCostController,
+                              TextInputType.number,
+                              _validateInput,
+                              focusNode: _powerCostFocusNode,
+                            ),
+                          ],
+                          if (selectedMachineId == '2')
+                            _buildTextField(
+                              'Fuel Cost (PH) (Rs)',
+                              _fuelCostController,
+                              TextInputType.number,
+                              _validateInput,
+                              focusNode: _fuelCostFocusNode,
+                            ),
+                          _buildTextField(
+                            'Operator Wage per Hour (OW) (Rs)',
+                            _operatorWageController,
+                            TextInputType.number,
+                            _validateInput,
+                            focusNode: _operatorWageFocusNode,
+                            nextFocusNode: _consumableCostFocusNode,
+                          ),
+                          _buildTextField(
+                            'Consumables Cost per Year (CC) (Rs)',
+                            _consumableCostController,
+                            TextInputType.number,
+                            _validateInput,
+                            focusNode: _consumableCostFocusNode,
+                            nextFocusNode: _factoryRentFocusNode,
+                          ),
+                          _buildTextField(
+                            'Factory Rent/Overheads per Year (RA) (Rs)',
+                            _factoryRentController,
+                            TextInputType.number,
+                            _validateInput,
+                            focusNode: _factoryRentFocusNode,
+                            nextFocusNode: _operatingHoursFocusNode,
+                          ),
+                          _buildTextField(
+                            'Operating Hours per Day (H) (Hr)',
+                            _operatingHoursController,
+                            TextInputType.number,
+                            _validateInput,
+                            focusNode: _operatingHoursFocusNode,
+                            nextFocusNode: _workingDaysFocusNode,
+                          ),
+                          _buildTextField(
+                            'Working Days per Year (D) (Days))',
+                            _workingDaysController,
+                            TextInputType.number,
+                            _validateInput,
+                            focusNode: _workingDaysFocusNode,
                           ),
                         ],
-                        if (selectedMachineId == '2')
-                          _buildTextField(
-                            'Fuel Cost (PH) (Rs)',
-                            _fuelCostController,
-                            TextInputType.number,
-                            _validateInput,
-                            focusNode: _fuelCostFocusNode,
-                          ),
-                        _buildTextField(
-                          'Operator Wage per Hour (OW) (Rs)',
-                          _operatorWageController,
-                          TextInputType.number,
-                          _validateInput,
-                          focusNode: _operatorWageFocusNode,
-                          nextFocusNode: _consumableCostFocusNode,
-                        ),
-                        _buildTextField(
-                          'Consumables Cost per Year (CC) (Rs)',
-                          _consumableCostController,
-                          TextInputType.number,
-                          _validateInput,
-                          focusNode: _consumableCostFocusNode,
-                          nextFocusNode: _factoryRentFocusNode,
-                        ),
-                        _buildTextField(
-                          'Factory Rent/Overheads per Year (RA) (Rs)',
-                          _factoryRentController,
-                          TextInputType.number,
-                          _validateInput,
-                          focusNode: _factoryRentFocusNode,
-                          nextFocusNode: _operatingHoursFocusNode,
-                        ),
-                        _buildTextField(
-                          'Operating Hours per Day (H) (Hr)',
-                          _operatingHoursController,
-                          TextInputType.number,
-                          _validateInput,
-                          focusNode: _operatingHoursFocusNode,
-                          nextFocusNode: _workingDaysFocusNode,
-                        ),
-                        _buildTextField(
-                          'Working Days per Year (D) (Days))',
-                          _workingDaysController,
-                          TextInputType.number,
-                          _validateInput,
-                          focusNode: _workingDaysFocusNode,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 16),
-              color: Colors.white,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kButtonColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 2, horizontal: 16),
+                color: Colors.white,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kButtonColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 100, vertical: 15),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                ),
-                onPressed: _calculateMHR,
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Icon(Icons.calculate, color: Colors.white),
-                    SizedBox(width: 10),
-                    Text('CALCULATE', style: TextStyle(color: Colors.white)),
-                  ],
+                  onPressed: _calculateMHR,
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Icon(Icons.calculate, color: Colors.white),
+                      SizedBox(width: 10),
+                      Text('CALCULATE', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -703,7 +718,7 @@ class _CalculationSheetState extends State<CalculationSheet> {
           }
           if (kDebugMode) {
             print(
-                "Selected Machine SubCategory ID: ${prefs.getString('selectedMachinecatId')}");
+                "Selected Machine SubCategory ID: ${prefs.getString('selectedMachinesubcatId')}");
           }
         }
       },
@@ -716,12 +731,81 @@ class _CalculationSheetState extends State<CalculationSheet> {
     );
   }
 
+  // Widget _buildStyledDropdown(String hint, List<CurrencyModel> options,
+  //     String? selectedValue, Function(String?) onChanged,
+  //     {required String? Function(dynamic value) validator}) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(bottom: 8),
+  //     child: DropdownButtonFormField2<String>(
+  //       isExpanded: true,
+  //       value: selectedValue,
+  //       validator: validator,
+  //       decoration: InputDecoration(
+  //         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+  //         focusedBorder: const OutlineInputBorder(
+  //           borderRadius: BorderRadius.all(Radius.circular(10.0)),
+  //           borderSide: BorderSide(color: Colors.blue, width: 2.0),
+  //         ),
+  //         errorBorder: const OutlineInputBorder(
+  //           borderRadius: BorderRadius.all(Radius.circular(10.0)),
+  //           borderSide: BorderSide(color: Colors.grey, width: 2.0),
+  //         ),
+  //         focusedErrorBorder: const OutlineInputBorder(
+  //           borderRadius: BorderRadius.all(Radius.circular(10.0)),
+  //           borderSide: BorderSide(color: Colors.grey, width: 2.5),
+  //         ),
+  //         errorStyle: const TextStyle(color: Colors.red, fontSize: 14),
+  //         contentPadding:
+  //             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+  //         suffixIcon: selectedValue != null && selectedValue.isNotEmpty
+  //             ? IconButton(
+  //                 icon: const Icon(Icons.close, color: Colors.red),
+  //                 onPressed: () async {
+  //                   SharedPreferences prefs =
+  //                       await SharedPreferences.getInstance();
+  //                   await prefs.remove('selectedCurrency');
+  //                   await prefs.remove('selectedCurrencyId');
+  //                   await prefs.remove('selectedCurrencyAmountName');
+  //                   await prefs.remove('selectedCurrencyName');
+  //                   setState(() {
+  //                     selectedCurrency = null;
+  //                   });
+  //                   if (kDebugMode) {
+  //                     print("Currency selection cleared");
+  //                   }
+  //                 },
+  //               )
+  //             : null,
+  //       ),
+  //       items: options
+  //           .map((currency) => DropdownMenuItem<String>(
+  //                 value: "${currency.name} - ${currency.amount}",
+  //                 child: Text("${currency.name} - ${currency.amount}",
+  //                     style: const TextStyle(fontSize: 16)),
+  //               ))
+  //           .toList(),
+  //       onChanged: onChanged,
+  //       hint: Text(hint,
+  //           style: const TextStyle(fontSize: 16, color: Colors.grey)),
+  //           dropdownHeight: 200, // Set your desired dropdown height
+  //     dropdownWidth: 300,  // Set your desired dropdown width
+  //     buttonStyleData: const ButtonStyleData(
+  //       height: 60,
+  //       width: double.infinity,
+  //     ),
+  //     menuItemStyleData: const MenuItemStyleData(
+  //       height: 40,
+  //     ),
+  //     ),
+  //   );
+  // }
+
   Widget _buildStyledDropdown(String hint, List<CurrencyModel> options,
       String? selectedValue, Function(String?) onChanged,
       {required String? Function(dynamic value) validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: DropdownButtonFormField<String>(
+      child: DropdownButtonFormField2<String>(
         isExpanded: true,
         value: selectedValue,
         validator: validator,
@@ -772,6 +856,20 @@ class _CalculationSheetState extends State<CalculationSheet> {
         onChanged: onChanged,
         hint: Text(hint,
             style: const TextStyle(fontSize: 16, color: Colors.grey)),
+        // dropdownHeight: 200, // Set your desired dropdown height
+        // dropdownWidth: 300,  // Set your desired dropdown width
+        buttonStyleData: const ButtonStyleData(
+            // height: 30,
+            // width: double.infinity,
+            ),
+        dropdownStyleData: DropdownStyleData(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+        // menuItemStyleData: const MenuItemStyleData(
+        //   height: 40,
+        // ),
       ),
     );
   }
@@ -781,7 +879,7 @@ class _CalculationSheetState extends State<CalculationSheet> {
       {required String? Function(dynamic value) validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: DropdownButtonFormField<String>(
+      child: DropdownButtonFormField2<String>(
         isExpanded: true,
         value: selectedValue,
         validator: validator,
@@ -843,6 +941,11 @@ class _CalculationSheetState extends State<CalculationSheet> {
         onChanged: onChanged,
         hint: Text(hint,
             style: const TextStyle(fontSize: 16, color: Colors.grey)),
+        dropdownStyleData: DropdownStyleData(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
       ),
     );
   }
@@ -852,7 +955,7 @@ class _CalculationSheetState extends State<CalculationSheet> {
       {required String? Function(dynamic value) validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: DropdownButtonFormField<String>(
+      child: DropdownButtonFormField2<String>(
         isExpanded: true,
         value: selectedValue,
         validator: validator,
@@ -905,6 +1008,11 @@ class _CalculationSheetState extends State<CalculationSheet> {
         onChanged: onChanged,
         hint: Text(hint,
             style: const TextStyle(fontSize: 16, color: Colors.grey)),
+        dropdownStyleData: DropdownStyleData(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
       ),
     );
   }
@@ -914,7 +1022,7 @@ class _CalculationSheetState extends State<CalculationSheet> {
       {required String? Function(dynamic value) validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: DropdownButtonFormField<String>(
+      child: DropdownButtonFormField2<String>(
         isExpanded: true,
         value: selectedValue,
         validator: validator,
@@ -956,19 +1064,22 @@ class _CalculationSheetState extends State<CalculationSheet> {
         items: options
             .map((subcat) => DropdownMenuItem<String>(
                   value: subcat.name,
-                  child: Container(
-                      color: Colors.white,
-                      child: Text(subcat.name,
-                          style: const TextStyle(fontSize: 16))),
+                  child:
+                      Text(subcat.name, style: const TextStyle(fontSize: 16)),
                 ))
             .toList(),
         onChanged: onChanged,
         hint: Text(hint,
             style: const TextStyle(fontSize: 16, color: Colors.grey)),
+        dropdownStyleData: DropdownStyleData(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
         selectedItemBuilder: (BuildContext context) {
           return options.map<Widget>((MachineSubCatModel subcat) {
             return SizedBox(
-                width: 80, // Set your desired width here
+                width: 80,
                 child: Text(
                   selectedValue ?? hint,
                   style: const TextStyle(fontSize: 16),
@@ -1010,6 +1121,8 @@ class _CalculationSheetState extends State<CalculationSheet> {
         },
         decoration: InputDecoration(
           labelText: labelText,
+          labelStyle: const TextStyle(color: Colors.black54),
+          floatingLabelStyle: const TextStyle(color: Colors.blue),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           focusedBorder: const OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -1038,7 +1151,12 @@ class _CalculationSheetState extends State<CalculationSheet> {
         selectedSubCategory != null) {
       final provider = Provider.of<CalculationProvider>(context, listen: false);
       String? selectedMainCatId = prefs.getString('selectedMainMachineId');
+      String? selectedCurrencyId = prefs.getString('selectedCurrencyId');
+      print(
+          "------------------------------------${prefs.getString('selectedCurrencyId')}");
+      print("--------------------------$selectedCurrencyId");
       Map<String, dynamic> requestData = {
+        "currency_id": selectedCurrencyId,
         "main_cat_id": selectedMainCatId,
         "maintanance_cost": _maintenanceCostController.text.isNotEmpty
             ? _maintenanceCostController.text
@@ -1070,7 +1188,7 @@ class _CalculationSheetState extends State<CalculationSheet> {
       };
       if (selectedMainCatId == '1') {
         // Category 1 fields
-        requestData["currency_id"] = prefs.getString('selectedCurrencyId');
+        // requestData["currency_id"] = prefs.getString('selectedCurrencyId');
         requestData["power_consumption"] =
             _powerConsumptionController.text.isNotEmpty
                 ? _powerConsumptionController.text
@@ -1079,7 +1197,7 @@ class _CalculationSheetState extends State<CalculationSheet> {
             ? _powerCostController.text
             : '0';
       } else if (selectedMainCatId == '2') {
-        requestData["currency_id"] = prefs.getString('selectedCurrencyId');
+        // requestData["currency_id"] = prefs.getString('selectedCurrencyId');
         // Category 2 fields
         requestData["fuel_cost_per_hour"] = _fuelCostController.text.isNotEmpty
             ? _fuelCostController.text

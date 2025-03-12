@@ -1,9 +1,13 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:machine_hour_rate/views/home/home_page_view.dart';
 import 'package:machine_hour_rate/views/login/register_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashProvider with ChangeNotifier {
   bool isSplashVisible = true;
@@ -45,13 +49,46 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _animationController.forward();
 
-    Future.delayed(const Duration(seconds: 3), () {
-      Provider.of<SplashProvider>(context, listen: false).hideSplash();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const RegisterScreen()),
-      );
-    });
+    // Future.delayed(const Duration(seconds: 3), () {
+    //   Provider.of<SplashProvider>(context, listen: false).hideSplash();
+    //   Navigator.pushReplacement(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => const RegisterScreen()),
+    //   );
+    // });
+    isLoggedIn();
+  }
+
+  void isLoggedIn() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    bool isLoggedGuestUser = prefs.getBool('isLoggedGuestUser') ?? false;
+
+    if (isLoggedIn == true) {
+      Timer(const Duration(seconds: 3), () {
+        Provider.of<SplashProvider>(context, listen: false).hideSplash();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const RegisterScreen()),
+        );
+      });
+    } else if (isLoggedGuestUser == true) {
+      Timer(const Duration(seconds: 3), () {
+        Provider.of<SplashProvider>(context, listen: false).hideSplash();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      });
+    } else {
+      Timer(const Duration(seconds: 3), () {
+        Provider.of<SplashProvider>(context, listen: false).hideSplash();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      });
+    }
   }
 
   @override
