@@ -45,54 +45,17 @@ class _SettingsPageState extends State<SettingsPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       isGuestUser = prefs.getBool("isLoggedGuestUser") ?? false;
-
       if (isGuestUser) {
-        // Explicitly set guest user details here
         name = "Guest User";
-        // email = "";
-        // mobile = "";
+        email = "";
+        mobile = "";
       } else {
-        // Load actual user details for logged in users
         name = prefs.getString("user_name") ?? " ";
         email = prefs.getString("user_email") ?? "";
         mobile = prefs.getString("user_mobile") ?? "";
       }
     });
   }
-  // Future<void> _loadUserStatus() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   setState(() {
-  //     // email = prefs.getString("user_email") ?? "user@example.com";
-  //     // mobile = prefs.getString("user_mobile") ?? "+91 9876543210";
-  //     // name = prefs.getString("user_name") ?? "Guest User ";
-  //     // isGuestUser = prefs.getBool("is_logged_in") ?? false;
-  //     isGuestUser = prefs.getBool("isLoggedGuestUser") ?? false;
-  //     if (isGuestUser) {
-  //       name = "Guest User";
-  //     } else {
-  //       // Use default guest values if not logged in
-  //       // email = "guest@example.com";
-  //       // mobile = "+91 9876543210";
-
-  //       email = prefs.getString("user_email") ?? "";
-  //       mobile = prefs.getString("user_mobile") ?? "";
-  //       name = prefs.getString("user_name") ?? " ";
-  //     }
-  //   });
-  // setState(() {
-  //   isGuestUser = prefs.getBool("isGuestUser") ?? false;
-  //   name = isGuestUser
-  //       ? "Guest User"
-  //       : (prefs.getString("user_name") ?? "Guest User");
-  //   // });
-  //   if (!isGuestUser) {
-  //     String? userId = prefs.getString("userId");
-  //     fetchCalculations(userId: userId);
-  //   } else {
-  //     fetchCalculations();
-  //   }
-  // });
-  // }
 
   Future<void> _loadAppVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();

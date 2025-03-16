@@ -53,8 +53,10 @@ class _GuestHomeState extends State<GuestHome> {
 
                             return GestureDetector(
                               onTap: () {
-                                print(
-                                    "-------------------calcution id-----------$calId");
+                                if (kDebugMode) {
+                                  print(
+                                      "-------------------calcution id-----------$calId");
+                                }
 
                                 Navigator.push(
                                   context,

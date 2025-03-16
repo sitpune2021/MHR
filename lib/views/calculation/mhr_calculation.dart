@@ -1,4 +1,4 @@
-// ignore_for_file: library_prefixes, deprecated_member_use
+// ignore_for_file: library_prefixes, deprecated_member_use, use_build_context_synchronously
 
 import 'dart:convert';
 import 'dart:io';
@@ -284,13 +284,17 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
 
       // Show a success message
       _showMessage(context, "PDF saved at $filePath");
-      print("PDF saved at $filePath");
+      if (kDebugMode) {
+        print("PDF saved at $filePath");
+      }
 
       // Open the file after saving
       OpenFilex.open(filePath);
     } catch (e) {
       _showMessage(context, "Failed to save PDF: $e");
-      print("Download failed: $e");
+      if (kDebugMode) {
+        print("Download failed: $e");
+      }
     }
   }
 
@@ -704,7 +708,6 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
                                                 await DatabaseHelper()
                                                     .countGuestCalculations();
                                             if (currentCount >= 10) {
-                                              // If limit is exceeded, show dialog
                                               _showLimitExceededDialog(context);
                                             } else {
                                               _showGuestDialog(context);
@@ -718,14 +721,6 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
                                                               const HomeScreen()));
                                             }).saveData(context);
                                           }
-
-                                          // await SaveCalculation(() {
-                                          //   Navigator.of(context)
-                                          //       .pushReplacement(
-                                          //           MaterialPageRoute(
-                                          //               builder: (context) =>
-                                          //                   const HomeScreen()));
-                                          // }).saveData(context);
                                         },
                                         icon: const Icon(Icons.save),
                                         label: const Text("Save"),
@@ -754,12 +749,7 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
                     ),
                   );
                 }
-              })
-          // result == null
-          //     ? const CircularProgressIndicator()
-          // :
-
-          ),
+              })),
     );
   }
 
@@ -879,7 +869,7 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
             TextButton(
               child: const Text("OK"),
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
             ),
           ],

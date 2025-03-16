@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, unused_local_variable, non_constant_identifier_names
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -83,7 +85,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     labelText: "First Name",
                     labelStyle: const TextStyle(color: Colors.black),
-                    // hintText: "Enter your first name",
                     errorText: validationErrors?['firstName'],
                     focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -122,7 +123,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     labelText: "Last Name",
                     labelStyle: const TextStyle(color: Colors.black),
-                    // hintText: "Enter your last name",
                     errorText: validationErrors?['lastName'],
                     focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -177,7 +177,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       labelText: "Mobile Number",
                       labelStyle: const TextStyle(color: Colors.black),
-                      // hintText: "Enter mobile number",
                       errorText: validationErrors?['mobile'],
                       focusedBorder: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -229,7 +228,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     labelText: "Email (Optional)",
                     labelStyle: const TextStyle(color: Colors.black),
-                    // hintText: "Enter your email",
                     errorText: validationErrors?['email'],
                     focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -270,7 +268,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         });
                       },
                     ),
-                    // const Text("I agree with privacy policy"),
                     RichText(
                         text: TextSpan(
                       children: [
@@ -281,13 +278,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         TextSpan(
                           text: "Privacy Policy",
                           style: const TextStyle(
-                            color: Colors.blue, // Hyperlink color
-                            decoration: TextDecoration
-                                .underline, // Underline text for hyperlink
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
                           ),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () => _PrivacyPolicy(context),
-                          // Action on tap
                         ),
                       ],
                     ))
@@ -390,8 +385,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             await prefs.setBool("isLoggedGuestUser", true);
                             // await prefs.setBool("user_data", false);
                             var guestUser = prefs.getBool("guest_user");
-                            print(
-                                "--------------------------------$guestUser"); // gg
+                            if (kDebugMode) {
+                              print(
+                                  "--------------------------------$guestUser");
+                            }
 
                             Navigator.pushReplacement(
                                 context,

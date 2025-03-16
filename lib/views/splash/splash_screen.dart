@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
 import 'dart:async';
 
@@ -59,36 +59,68 @@ class _SplashScreenState extends State<SplashScreen>
     isLoggedIn();
   }
 
-  void isLoggedIn() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    bool isLoggedGuestUser = prefs.getBool('isLoggedGuestUser') ?? false;
+  // void isLoggedIn() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  //   bool isLoggedGuestUser = prefs.getBool('isLoggedGuestUser') ?? false;
 
-    if (isLoggedIn == true) {
-      Timer(const Duration(seconds: 3), () {
-        Provider.of<SplashProvider>(context, listen: false).hideSplash();
+  //   if (isLoggedIn == true) {
+  //     Timer(const Duration(seconds: 3), () {
+  //       Provider.of<SplashProvider>(context, listen: false).hideSplash();
+  //       Navigator.pushReplacement(
+  //         context,
+  //         MaterialPageRoute(builder: (context) => const RegisterScreen()),
+  //       );
+  //     });
+  //   } else if (isLoggedGuestUser == true) {
+  //     Timer(const Duration(seconds: 3), () {
+  //       Provider.of<SplashProvider>(context, listen: false).hideSplash();
+  //       Navigator.pushReplacement(
+  //         context,
+  //         MaterialPageRoute(builder: (context) => const HomePage()),
+  //       );
+  //     });
+  //   } else {
+  //     Timer(const Duration(seconds: 3), () {
+  //       Provider.of<SplashProvider>(context, listen: false).hideSplash();
+  //       Navigator.pushReplacement(
+  //         context,
+  //         MaterialPageRoute(builder: (context) => const HomePage()),
+  //       );
+  //     });
+  //   }
+  // }
+
+  void isLoggedIn() async {
+    // Delay for showing the splash screen
+    Timer(const Duration(seconds: 3), () async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+      bool isLoggedGuestUser = prefs.getBool('isLoggedGuestUser') ?? false;
+
+      // Hide the splash screen
+      Provider.of<SplashProvider>(context, listen: false).hideSplash();
+
+      if (isLoggedIn) {
+        // If logged in, navigate to HomePage
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      } else if (isLoggedGuestUser) {
+        // If Guest user, navigate to HomePage
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      } else {
+        // Not logged in or a guest user, navigate to RegisterScreen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const RegisterScreen()),
         );
-      });
-    } else if (isLoggedGuestUser == true) {
-      Timer(const Duration(seconds: 3), () {
-        Provider.of<SplashProvider>(context, listen: false).hideSplash();
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-      });
-    } else {
-      Timer(const Duration(seconds: 3), () {
-        Provider.of<SplashProvider>(context, listen: false).hideSplash();
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-      });
-    }
+      }
+    });
   }
 
   @override

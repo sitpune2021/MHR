@@ -24,7 +24,9 @@ class _HomePageState extends State<HomePage> {
     _pages = [
       const HomeScreen(),
       const CalculationSheet(),
-      SettingsPage(isGuestUser: isGuestUser),
+      SettingsPage(
+        isGuestUser: isGuestUser,
+      ),
     ];
 
     _titles = [

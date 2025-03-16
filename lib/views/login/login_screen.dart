@@ -141,10 +141,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (errorMessage == null || errorMessage.isEmpty) {
         await authProvider.loadUserData();
         UserModel? userData = authProvider.userData;
-
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_id', "${userData?.id}");
-        prefs.setBool("isLoggedIn", true);
+        await prefs.setBool("isLoggedIn", true);
+        await prefs.setBool("isLoggedGuestUser", false); // User is not guest
         if (kDebugMode) {
           print('User ID...........................: ${userData?.id}');
         }
