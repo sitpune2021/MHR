@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/foundation.dart';
@@ -366,73 +366,6 @@ class _CalculationSheetState extends State<CalculationSheet> {
                           selectedCategory != null
                               ? _buildMachineSub()
                               : Container(),
-                          // _buildTextField(
-                          //     'Maintenance Cost per Year (MC) (Rs)',
-                          //     _maintenanceCostController,
-                          //     TextInputType.number,
-                          //     _validateInput,
-
-                          //     ),
-                          // _buildTextField(
-                          //     'Machine Purchase Price (MP) (Rs)',
-                          //     _machinePriceController,
-                          //     TextInputType.number,
-                          //     _validateInput),
-                          // _buildTextField(
-                          //     'Machine Life in Years (L) (Yrs)',
-                          //     _machineLifeController,
-                          //     TextInputType.number,
-                          //     _validateInput),
-                          // _buildTextField(
-                          //     'Salvage Value (S) (Rs)',
-                          //     _salvageValueController,
-                          //     TextInputType.number,
-                          //     _validateInput),
-                          // // Power Consumption & Power Cost only if selectedMachineId == 1
-                          // if (selectedMachineId == '1') ...[
-                          //   _buildTextField(
-                          //       'Power Consumption per Hour (PC) (Kw)',
-                          //       _powerConsumptionController,
-                          //       TextInputType.number,
-                          //       _validateInput),
-                          //   _buildTextField(
-                          //       'Power Cost per Unit (PU) (Rs)',
-                          //       _powerCostController,
-                          //       TextInputType.number,
-                          //       _validateInput),
-                          // ],
-                          // // Fuel Cost only if selectedMachineId == 2
-                          // if (selectedMachineId == '2')
-                          //   _buildTextField(
-                          //       'Fuel Cost (PH) (Rs)',
-                          //       _fuelCostController,
-                          //       TextInputType.number,
-                          //       _validateInput),
-                          // _buildTextField(
-                          //     'Operator Wage per Hour (OW) (Rs)',
-                          //     _operatorWageController,
-                          //     TextInputType.number,
-                          //     _validateInput),
-                          // _buildTextField(
-                          //     'Consumables Cost per Year (CC) (Rs)',
-                          //     _consumableCostController,
-                          //     TextInputType.number,
-                          //     _validateInput),
-                          // _buildTextField(
-                          //     'Factory Rent/Overheads per Year (RA) (Rs)',
-                          //     _factoryRentController,
-                          //     TextInputType.number,
-                          //     _validateInput),
-                          // _buildTextField(
-                          //     'Operating Hours per Day (H) (Hr)',
-                          //     _operatingHoursController,
-                          //     TextInputType.number,
-                          //     _validateInput),
-                          // _buildTextField(
-                          //     'Working Days per Year (D) (Days))',
-                          //     _workingDaysController,
-                          //     TextInputType.number,
-                          //     _validateInput),
                           _buildTextField(
                             'Maintenance Cost per Year (MC) (Rs)',
                             _maintenanceCostController,
@@ -731,75 +664,6 @@ class _CalculationSheetState extends State<CalculationSheet> {
     );
   }
 
-  // Widget _buildStyledDropdown(String hint, List<CurrencyModel> options,
-  //     String? selectedValue, Function(String?) onChanged,
-  //     {required String? Function(dynamic value) validator}) {
-  //   return Padding(
-  //     padding: const EdgeInsets.only(bottom: 8),
-  //     child: DropdownButtonFormField2<String>(
-  //       isExpanded: true,
-  //       value: selectedValue,
-  //       validator: validator,
-  //       decoration: InputDecoration(
-  //         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-  //         focusedBorder: const OutlineInputBorder(
-  //           borderRadius: BorderRadius.all(Radius.circular(10.0)),
-  //           borderSide: BorderSide(color: Colors.blue, width: 2.0),
-  //         ),
-  //         errorBorder: const OutlineInputBorder(
-  //           borderRadius: BorderRadius.all(Radius.circular(10.0)),
-  //           borderSide: BorderSide(color: Colors.grey, width: 2.0),
-  //         ),
-  //         focusedErrorBorder: const OutlineInputBorder(
-  //           borderRadius: BorderRadius.all(Radius.circular(10.0)),
-  //           borderSide: BorderSide(color: Colors.grey, width: 2.5),
-  //         ),
-  //         errorStyle: const TextStyle(color: Colors.red, fontSize: 14),
-  //         contentPadding:
-  //             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-  //         suffixIcon: selectedValue != null && selectedValue.isNotEmpty
-  //             ? IconButton(
-  //                 icon: const Icon(Icons.close, color: Colors.red),
-  //                 onPressed: () async {
-  //                   SharedPreferences prefs =
-  //                       await SharedPreferences.getInstance();
-  //                   await prefs.remove('selectedCurrency');
-  //                   await prefs.remove('selectedCurrencyId');
-  //                   await prefs.remove('selectedCurrencyAmountName');
-  //                   await prefs.remove('selectedCurrencyName');
-  //                   setState(() {
-  //                     selectedCurrency = null;
-  //                   });
-  //                   if (kDebugMode) {
-  //                     print("Currency selection cleared");
-  //                   }
-  //                 },
-  //               )
-  //             : null,
-  //       ),
-  //       items: options
-  //           .map((currency) => DropdownMenuItem<String>(
-  //                 value: "${currency.name} - ${currency.amount}",
-  //                 child: Text("${currency.name} - ${currency.amount}",
-  //                     style: const TextStyle(fontSize: 16)),
-  //               ))
-  //           .toList(),
-  //       onChanged: onChanged,
-  //       hint: Text(hint,
-  //           style: const TextStyle(fontSize: 16, color: Colors.grey)),
-  //           dropdownHeight: 200, // Set your desired dropdown height
-  //     dropdownWidth: 300,  // Set your desired dropdown width
-  //     buttonStyleData: const ButtonStyleData(
-  //       height: 60,
-  //       width: double.infinity,
-  //     ),
-  //     menuItemStyleData: const MenuItemStyleData(
-  //       height: 40,
-  //     ),
-  //     ),
-  //   );
-  // }
-
   Widget _buildStyledDropdown(String hint, List<CurrencyModel> options,
       String? selectedValue, Function(String?) onChanged,
       {required String? Function(dynamic value) validator}) {
@@ -856,20 +720,12 @@ class _CalculationSheetState extends State<CalculationSheet> {
         onChanged: onChanged,
         hint: Text(hint,
             style: const TextStyle(fontSize: 16, color: Colors.grey)),
-        // dropdownHeight: 200, // Set your desired dropdown height
-        // dropdownWidth: 300,  // Set your desired dropdown width
-        buttonStyleData: const ButtonStyleData(
-            // height: 30,
-            // width: double.infinity,
-            ),
+        buttonStyleData: const ButtonStyleData(),
         dropdownStyleData: DropdownStyleData(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
           ),
         ),
-        // menuItemStyleData: const MenuItemStyleData(
-        //   height: 40,
-        // ),
       ),
     );
   }
@@ -1152,9 +1008,13 @@ class _CalculationSheetState extends State<CalculationSheet> {
       final provider = Provider.of<CalculationProvider>(context, listen: false);
       String? selectedMainCatId = prefs.getString('selectedMainMachineId');
       String? selectedCurrencyId = prefs.getString('selectedCurrencyId');
-      print(
-          "------------------------------------${prefs.getString('selectedCurrencyId')}");
-      print("--------------------------$selectedCurrencyId");
+      if (kDebugMode) {
+        print(
+            "------------------------------------${prefs.getString('selectedCurrencyId')}");
+      }
+      if (kDebugMode) {
+        print("--------------------------$selectedCurrencyId");
+      }
       Map<String, dynamic> requestData = {
         "currency_id": selectedCurrencyId,
         "main_cat_id": selectedMainCatId,
@@ -1188,7 +1048,6 @@ class _CalculationSheetState extends State<CalculationSheet> {
       };
       if (selectedMainCatId == '1') {
         // Category 1 fields
-        // requestData["currency_id"] = prefs.getString('selectedCurrencyId');
         requestData["power_consumption"] =
             _powerConsumptionController.text.isNotEmpty
                 ? _powerConsumptionController.text
@@ -1197,13 +1056,11 @@ class _CalculationSheetState extends State<CalculationSheet> {
             ? _powerCostController.text
             : '0';
       } else if (selectedMainCatId == '2') {
-        // requestData["currency_id"] = prefs.getString('selectedCurrencyId');
         // Category 2 fields
         requestData["fuel_cost_per_hour"] = _fuelCostController.text.isNotEmpty
             ? _fuelCostController.text
             : '0';
       }
-      //  Print data
       if (kDebugMode) {
         print("Request Data: $requestData");
       }

@@ -1,4 +1,4 @@
-// ignore_for_file: library_prefixes, deprecated_member_use, use_build_context_synchronously
+// ignore_for_file: library_prefixes, deprecated_member_use, use_build_context_synchronously, unrelated_type_equality_checks, unused_element
 
 import 'dart:convert';
 import 'dart:io';
@@ -105,11 +105,6 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
         "operating_hours": prefs.getString("operating_hours"),
         "working_days": prefs.getString("working_days"),
         "machine_hour_rate": prefs.getString("mhr"),
-        // "depreciation": prefs.getString("depreciation"),
-        // "power_costs": prefs.getString("power_costs"),
-        // "operator_wages": prefs.getString("operator_wages"),
-        // "total_cost_per_year": prefs.getString("total_cost_per_year"),
-        // "total_working_hours": prefs.getString("total_working_hours"),
       };
     });
     if (kDebugMode) {
@@ -817,9 +812,13 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
     int result = await DatabaseHelper().insertCalculation(requestBody);
 
     if (result == 1) {
-      print("-----------------------------------------data inserted");
+      if (kDebugMode) {
+        print("-----------------------------------------data inserted");
+      }
     } else {
-      print("-----------------------------------------data failed");
+      if (kDebugMode) {
+        print("-----------------------------------------data failed");
+      }
     }
   }
 
@@ -994,8 +993,10 @@ class SaveCalculation {
         if (kDebugMode) {
           print("Calculation Successfully Saved: ${response.body}");
         }
-        print(
-            'Request Body--------------------------saved: ${json.encode(requestBody)}'); // Log the full request body
+        if (kDebugMode) {
+          print(
+              'Request Body--------------------------saved: ${json.encode(requestBody)}');
+        } // Log the full request body
         if (context.mounted) {
           onSuccessCallback();
         }

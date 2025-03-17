@@ -397,14 +397,12 @@ class _SettingsPageState extends State<SettingsPage> {
                       padding: const EdgeInsets.only(
                         left: 10,
                       ),
-                      // height: MediaQuery.of(context).size.height * 0.5,
                       width: MediaQuery.of(context).size.width * 0.9,
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       child: SingleChildScrollView(
-                        // Add SingleChildScrollView here
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [

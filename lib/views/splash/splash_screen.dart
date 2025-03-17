@@ -48,73 +48,26 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
     _animationController.forward();
-
-    // Future.delayed(const Duration(seconds: 3), () {
-    //   Provider.of<SplashProvider>(context, listen: false).hideSplash();
-    //   Navigator.pushReplacement(
-    //     context,
-    //     MaterialPageRoute(builder: (context) => const RegisterScreen()),
-    //   );
-    // });
     isLoggedIn();
   }
 
-  // void isLoggedIn() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-  //   bool isLoggedGuestUser = prefs.getBool('isLoggedGuestUser') ?? false;
-
-  //   if (isLoggedIn == true) {
-  //     Timer(const Duration(seconds: 3), () {
-  //       Provider.of<SplashProvider>(context, listen: false).hideSplash();
-  //       Navigator.pushReplacement(
-  //         context,
-  //         MaterialPageRoute(builder: (context) => const RegisterScreen()),
-  //       );
-  //     });
-  //   } else if (isLoggedGuestUser == true) {
-  //     Timer(const Duration(seconds: 3), () {
-  //       Provider.of<SplashProvider>(context, listen: false).hideSplash();
-  //       Navigator.pushReplacement(
-  //         context,
-  //         MaterialPageRoute(builder: (context) => const HomePage()),
-  //       );
-  //     });
-  //   } else {
-  //     Timer(const Duration(seconds: 3), () {
-  //       Provider.of<SplashProvider>(context, listen: false).hideSplash();
-  //       Navigator.pushReplacement(
-  //         context,
-  //         MaterialPageRoute(builder: (context) => const HomePage()),
-  //       );
-  //     });
-  //   }
-  // }
-
   void isLoggedIn() async {
-    // Delay for showing the splash screen
     Timer(const Duration(seconds: 3), () async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
       bool isLoggedGuestUser = prefs.getBool('isLoggedGuestUser') ?? false;
-
-      // Hide the splash screen
       Provider.of<SplashProvider>(context, listen: false).hideSplash();
-
       if (isLoggedIn) {
-        // If logged in, navigate to HomePage
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
         );
       } else if (isLoggedGuestUser) {
-        // If Guest user, navigate to HomePage
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
         );
       } else {
-        // Not logged in or a guest user, navigate to RegisterScreen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const RegisterScreen()),
@@ -175,7 +128,6 @@ class _SplashScreenState extends State<SplashScreen>
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.normal,
-                                // color: Colors.lightBlue,
                               ),
                             ),
                             const Text(
@@ -183,7 +135,6 @@ class _SplashScreenState extends State<SplashScreen>
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w500,
-                                // color: Colors.lightBlue,
                               ),
                             ),
                             const Text(
@@ -191,7 +142,6 @@ class _SplashScreenState extends State<SplashScreen>
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.normal,
-                                // color: Colors.lightBlue,
                               ),
                             ),
                           ]),

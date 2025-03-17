@@ -78,7 +78,9 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final url = Uri.parse("http://mhr.sitsolutions.co.in/view_calculation");
     var userid = prefs.getString("user_id");
-    print("--------------------------------------viewid ${widget.viewid}");
+    if (kDebugMode) {
+      print("--------------------------------------viewid ${widget.viewid}");
+    }
     try {
       final response = await http.post(
         url,
@@ -99,8 +101,12 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
           Map<String, dynamic> details =
               jsonData["details"]; // FIXED: Use Map instead of List
 
-          print("--------------Calculation view data-----------$jsonData");
-          print("--------------Calculation details-----------$details");
+          if (kDebugMode) {
+            print("--------------Calculation view data-----------$jsonData");
+          }
+          if (kDebugMode) {
+            print("--------------Calculation details-----------$details");
+          }
 
           CalculationListModel fetchedCalculation =
               CalculationListModel.fromJson(details);
@@ -281,13 +287,17 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
 
       // Show a success message
       _showMessage(context, "PDF saved at $filePath");
-      print("PDF saved at $filePath");
+      if (kDebugMode) {
+        print("PDF saved at $filePath");
+      }
 
       // Open the file after saving
       OpenFilex.open(filePath);
     } catch (e) {
       _showMessage(context, "Failed to save PDF: $e");
-      print("Download failed: $e");
+      if (kDebugMode) {
+        print("Download failed: $e");
+      }
     }
   }
 
