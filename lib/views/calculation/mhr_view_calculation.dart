@@ -138,6 +138,109 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
     }
   }
 
+  // Future<void> _downloadPDF(BuildContext context, dynamic result) async {
+  //   if (currentCalculation!.machineHourRate == null ||
+  //       currentCalculation!.machineHourRate!.isEmpty) {
+  //     _showMessage(context, "Machine Hour Rate is empty!");
+  //     return;
+  //   }
+
+  //   if (!await _requestStoragePermission()) {
+  //     return; // Permission denied
+  //   }
+
+  //   // Get external storage directory (Scoped Storage)
+  //   Directory? directory = await getExternalStorageDirectory();
+  //   if (directory == null) {
+  //     _showMessage(context, "Unable to find storage directory!");
+  //     return;
+  //   }
+
+  //   // Use Downloads directory instead
+  //   String documentsPath =
+  //       "/storage/emulated/0/Download"; // Standard Downloads folder
+  //   String filePath = "$documentsPath/machine_hour_rate.pdf";
+
+  //   final pdf = pdfLib.Document();
+  //   pdf.addPage(
+  //     pdfLib.Page(
+  //       pageFormat: PdfPageFormat.a4,
+  //       build: (pdfLib.Context context) => pdfLib.Center(
+  //         child: pdfLib.Column(
+  //           mainAxisAlignment: pdfLib.MainAxisAlignment.start,
+  //           children: [
+  //             pdfLib.Text("Machine Hour Rate Overview",
+  //                 style: const pdfLib.TextStyle(fontSize: 24)),
+  //             pdfLib.SizedBox(height: 20),
+  //             pdfLib.Text("Calculation Result",
+  //                 style: const pdfLib.TextStyle(fontSize: 24)),
+  //             pdfLib.SizedBox(height: 10),
+  //             //calculation
+  //             pdfLib.Text(
+  //                 "Machine Hour Rate: ${currentCalculation!.machineHourRate}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Depreciation: ${currentCalculation!.depreciation}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Power Cost: ${currentCalculation!.powerCost}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Operator Wages: ${currentCalculation!.operatorWages}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Total Cost Per Year: ${currentCalculation!.totalCostPerYear}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Total Working Hours: ${currentCalculation!.totalWorkingHours}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.SizedBox(height: 20),
+  //             // inpute
+  //             pdfLib.Text("Calculation User Input Values",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.SizedBox(height: 10),
+  //             pdfLib.Text(
+  //                 "Maintenance Cost: ${currentCalculation!.maintananceCost}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Machine Purchase Price: ${currentCalculation!.machinePurchasePrice}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Machine Life: ${currentCalculation!.machineLife}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Salvage Value: ${currentCalculation!.salvageValue}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Power Consumption: ${currentCalculation!.powerConsumption ?? '0'}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Power Cost: ${currentCalculation!.powerCostPerUnit ?? '0'}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Fuel Cost: ${currentCalculation!.fuelCostPerHour ?? '0'} ",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Operator Wage: ${currentCalculation!.operatorWage}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Consumable Cost: ${currentCalculation!.consumableCost}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Factory Rent: ${currentCalculation!.factoryRent}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Operating Hours: ${currentCalculation!.operatingHours}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Working Days: ${currentCalculation!.workingDays}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.SizedBox(height: 10),
+  //             pdfLib.Text("Generated on: ${DateTime.now()}"),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+
+  //   await _savePDF(
+  //     context,
+  //     pdf,
+  //   );
+  // }
   Future<void> _downloadPDF(BuildContext context, dynamic result) async {
     if (currentCalculation!.machineHourRate == null ||
         currentCalculation!.machineHourRate!.isEmpty) {
@@ -175,7 +278,8 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
               pdfLib.Text("Calculation Result",
                   style: const pdfLib.TextStyle(fontSize: 24)),
               pdfLib.SizedBox(height: 10),
-              //calculation
+
+              // Calculation fields (only show if not null)
               pdfLib.Text(
                   "Machine Hour Rate: ${currentCalculation!.machineHourRate}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
@@ -193,10 +297,14 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                   "Total Working Hours: ${currentCalculation!.totalWorkingHours}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.SizedBox(height: 20),
-              // inpute
+
+              // Input values section
               pdfLib.Text("Calculation User Input Values",
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.SizedBox(height: 10),
+
+              // Only show values if they are not null
+
               pdfLib.Text(
                   "Maintenance Cost: ${currentCalculation!.maintananceCost}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
@@ -205,17 +313,22 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.Text("Machine Life: ${currentCalculation!.machineLife}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
+
               pdfLib.Text("Salvage Value: ${currentCalculation!.salvageValue}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text(
-                  "Power Consumption: ${currentCalculation!.powerConsumption ?? '0'}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text(
-                  "Power Cost: ${currentCalculation!.powerCostPerUnit ?? '0'}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text(
-                  "Fuel Cost: ${currentCalculation!.fuelCostPerHour ?? '0'} ",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
+              if (currentCalculation != null &&
+                  currentCalculation!.mainCatId == '1') ...[
+                pdfLib.Text(
+                    "Power Consumption: ${currentCalculation!.powerConsumption}",
+                    style: const pdfLib.TextStyle(fontSize: 20)),
+                pdfLib.Text(
+                    "Power Cost: ${currentCalculation!.powerCostPerUnit}",
+                    style: const pdfLib.TextStyle(fontSize: 20)),
+              ],
+              if (currentCalculation!.mainCatId == '2') ...[
+                pdfLib.Text("Fuel Cost: ${currentCalculation!.fuelCostPerHour}",
+                    style: const pdfLib.TextStyle(fontSize: 20)),
+              ],
               pdfLib.Text("Operator Wage: ${currentCalculation!.operatorWage}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.Text(

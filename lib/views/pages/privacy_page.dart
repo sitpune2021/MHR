@@ -10,6 +10,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Privacy Policy'),
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
       ),
       body: const Center(
         child: SingleChildScrollView(
@@ -23,7 +24,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               ),
               SizedBox(height: 10),
               Text(
-                'Last Updated: [Date]',
+                'Last Updated: 22.03.2025',
                 style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
               ),
               SizedBox(height: 20),
@@ -126,7 +127,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               Text(
-                '[Your Company Name]\n[Email Address]\n[Phone Number]\n[Physical Address]',
+                'samaapp3@gmail.com\nPune',
                 style: TextStyle(fontSize: 14),
               ),
             ],

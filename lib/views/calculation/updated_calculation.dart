@@ -210,15 +210,21 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
               pdfLib.Text(
                   "Salvage Value: ${currentCalculation!.salvageValue ?? '0'}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text(
-                  "Power Consumption: ${currentCalculation!.powerConsumption ?? '0'}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text(
-                  "Power Cost: ${currentCalculation!.powerCostPerUnit ?? '0'}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text(
-                  "Fuel Cost: ${currentCalculation!.fuelCostPerHour ?? '0'}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
+              if (currentCalculation != null &&
+                  currentCalculation!.mainCatId == '1') ...[
+                pdfLib.Text(
+                    "Power Consumption: ${currentCalculation!.powerConsumption ?? '0'}",
+                    style: const pdfLib.TextStyle(fontSize: 20)),
+                pdfLib.Text(
+                    "Power Cost: ${currentCalculation!.powerCostPerUnit ?? '0'}",
+                    style: const pdfLib.TextStyle(fontSize: 20)),
+              ],
+              if (currentCalculation != null &&
+                  currentCalculation!.mainCatId == '2') ...[
+                pdfLib.Text(
+                    "Fuel Cost: ${currentCalculation!.fuelCostPerHour ?? '0'}",
+                    style: const pdfLib.TextStyle(fontSize: 20)),
+              ],
               pdfLib.Text(
                   "Operator Wage: ${currentCalculation!.operatorWage ?? '0'}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
@@ -248,46 +254,6 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
     );
   }
 
-  // Future<void> _savePDF(
-  //     BuildContext context, pdfLib.Document pdf, String filePath) async {
-  //   try {
-  //     final file = File(filePath);
-  //     await file.writeAsBytes(await pdf.save());
-  //     _showMessage(context, "PDF saved at $filePath");
-  //   } catch (e) {
-  //     _showMessage(context, "Failed to save PDF: $e");
-  //   }
-  // }
-
-  // Future<void> _savePDF(
-  //     BuildContext context, pdfLib.Document pdf, String filePath) async {
-  //   try {
-  //     if (!await _requestStoragePermission()) {
-  //       _showMessage(context, "Storage permission denied!");
-  //       return;
-  //     }
-
-  //     // Get public Downloads directory
-  //     Directory downloadsDir = Directory("/storage/emulated/0/Download");
-
-  //     if (!downloadsDir.existsSync()) {
-  //       _showMessage(context, "Downloads folder not accessible!");
-  //       return;
-  //     }
-
-  //     String filePath = "${downloadsDir.path}/machine_hour_rate.pdf";
-  //     final file = File(filePath);
-  //     await file.writeAsBytes(await pdf.save());
-
-  //     _showMessage(context, "PDF saved at $filePath");
-
-  //     // Open the file after saving
-  //     OpenFilex.open(filePath);
-  //   } catch (e) {
-  //     _showMessage(context, "Failed to save PDF: $e");
-  //     print("Download failed: $e");
-  //   }
-  // }
   Future<void> _savePDF(BuildContext context, pdfLib.Document pdf) async {
     try {
       if (!await _requestStoragePermission()) {
@@ -355,18 +321,6 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
 
     return true; // Non-Android platforms don't need this
   }
-  // Future<bool> _requestStoragePermission() async {
-  //   if (Platform.isAndroid) {
-  //     var status = await Permission.storage.request();
-
-  //     if (status.isGranted) return true;
-
-  //     if (await Permission.manageExternalStorage.isGranted) return true;
-
-  //     return false;
-  //   }
-  //   return true;
-  // }
 
   void _showMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(context)

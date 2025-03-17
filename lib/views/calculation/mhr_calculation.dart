@@ -185,14 +185,21 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.Text("Salvage Value: ${storedValues['salvage_value']}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text(
-                  "Power Consumption: ${storedValues['power_consumption'] ?? '0'}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Power Cost: ${storedValues['power_cost'] ?? '0'}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text(
-                  "Fuel Cost: ${storedValues['fuel_cost_per_hour'] ?? '0'}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
+              // condtion
+              if (storedValues['main_cat_id'] == '1') ...[
+                pdfLib.Text(
+                    "Power Consumption: ${storedValues['power_consumption'] ?? '0'}",
+                    style: const pdfLib.TextStyle(fontSize: 20)),
+                // condtion
+                pdfLib.Text("Power Cost: ${storedValues['power_cost'] ?? '0'}",
+                    style: const pdfLib.TextStyle(fontSize: 20)),
+              ],
+              // condition
+              if (storedValues['main_cat_id'] == '2') ...[
+                pdfLib.Text(
+                    "Fuel Cost: ${storedValues['fuel_cost_per_hour'] ?? '0'}",
+                    style: const pdfLib.TextStyle(fontSize: 20)),
+              ],
               pdfLib.Text("Operator Wage: ${storedValues['operator_wage']}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.Text("Consumable Cost: ${storedValues['consumable_cost']}",
@@ -217,47 +224,6 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
     );
   }
 
-  // Future<void> _savePDF(
-  //     BuildContext context, pdfLib.Document pdf, String filePath) async {
-  //   try {
-  //     final file = File(filePath);
-  //     await file.writeAsBytes(await pdf.save());
-  //     _showMessage(context, "PDF saved at $filePath");
-  //   } catch (e) {
-  //     _showMessage(context, "Failed to save PDF: $e");
-  //     print("-------------download faild------------$e");
-  //   }
-  // }
-
-  // Future<void> _savePDF(
-  //     BuildContext context, pdfLib.Document pdf, String filePath) async {
-  //   try {
-  //     if (!await _requestStoragePermission()) {
-  //       _showMessage(context, "Storage permission denied!");
-  //       return;
-  //     }
-
-  //     // Get public Downloads directory
-  //     Directory downloadsDir = Directory("/storage/emulated/0/Download");
-
-  //     if (!downloadsDir.existsSync()) {
-  //       _showMessage(context, "Downloads folder not accessible!");
-  //       return;
-  //     }
-
-  //     String filePath = "${downloadsDir.path}/machine_hour_rate.pdf";
-  //     final file = File(filePath);
-  //     await file.writeAsBytes(await pdf.save());
-
-  //     _showMessage(context, "PDF saved at $filePath");
-
-  //     // Open the file after saving
-  //     OpenFilex.open(filePath);
-  //   } catch (e) {
-  //     _showMessage(context, "Failed to save PDF: $e");
-  //     print("Download failed: $e");
-  //   }
-  // }
   Future<void> _savePDF(BuildContext context, pdfLib.Document pdf) async {
     try {
       if (!await _requestStoragePermission()) {

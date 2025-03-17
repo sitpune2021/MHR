@@ -317,7 +317,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // ...
   void _showEditDialog(CalculationListModel calculation) {
     TextEditingController fuelCostController =
         TextEditingController(text: calculation.fuelCostPerHour?.toString());
@@ -438,29 +437,56 @@ class _HomeScreenState extends State<HomeScreen> {
             TextButton(
               onPressed: () async {
                 Map<String, dynamic> updatedData = {
-                  "power_consumption":
-                      powerConsumptionController.text.isNotEmpty
-                          ? double.tryParse(powerConsumptionController.text)
-                          : null,
+                  "power_consumption": powerConsumptionController
+                          .text.isNotEmpty
+                      ? double.tryParse(
+                          powerConsumptionController.text.replaceAll(',', ''))
+                      : null,
                   "power_cost": powerCostController.text.isNotEmpty
-                      ? double.tryParse(powerCostController.text)
+                      ? double.tryParse(
+                          powerCostController.text.replaceAll(',', ''))
                       : null,
                   "fuel_cost_per_hour": fuelCostController.text.isNotEmpty
-                      ? double.tryParse(fuelCostController.text)
+                      ? double.tryParse(
+                          fuelCostController.text.replaceAll(',', ''))
                       : null,
-                  "maintanance_cost":
-                      double.tryParse(maintenanceCostController.text),
+                  "maintanance_cost": maintenanceCostController.text.isNotEmpty
+                      ? double.tryParse(
+                          maintenanceCostController.text.replaceAll(',', ''))
+                      : null,
                   "machine_purchase_price":
-                      double.tryParse(machinePurchasePriceController.text),
-                  "machine_life": double.tryParse(machineLifeController.text),
-                  "salvage_value": double.tryParse(salvageValueController.text),
-                  "operator_wage": double.tryParse(operatorWageController.text),
-                  "consumable_cost":
-                      double.tryParse(consumableCostController.text),
-                  "factory_rent": double.tryParse(factoryRentController.text),
-                  "operating_hours":
-                      double.tryParse(operatingHoursController.text),
-                  "working_days": double.tryParse(workingDaysController.text),
+                      machinePurchasePriceController.text.isNotEmpty
+                          ? double.tryParse(machinePurchasePriceController.text
+                              .replaceAll(',', ''))
+                          : null,
+                  "machine_life": machineLifeController.text.isNotEmpty
+                      ? double.tryParse(
+                          machineLifeController.text.replaceAll(',', ''))
+                      : null,
+                  "salvage_value": salvageValueController.text.isNotEmpty
+                      ? double.tryParse(
+                          salvageValueController.text.replaceAll(',', ''))
+                      : null,
+                  "operator_wage": operatorWageController.text.isNotEmpty
+                      ? double.tryParse(
+                          operatorWageController.text.replaceAll(',', ''))
+                      : null,
+                  "consumable_cost": consumableCostController.text.isNotEmpty
+                      ? double.tryParse(
+                          consumableCostController.text.replaceAll(',', ''))
+                      : null,
+                  "factory_rent": factoryRentController.text.isNotEmpty
+                      ? double.tryParse(
+                          factoryRentController.text.replaceAll(',', ''))
+                      : null,
+                  "operating_hours": operatingHoursController.text.isNotEmpty
+                      ? double.tryParse(
+                          operatingHoursController.text.replaceAll(',', ''))
+                      : null,
+                  "working_days": workingDaysController.text.isNotEmpty
+                      ? double.tryParse(
+                          workingDaysController.text.replaceAll(',', ''))
+                      : null,
                 };
 
                 // Call to update calculation
@@ -482,6 +508,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context) => MHRCalScreen(viewid: calId),
                   ),
                 );
+
+                // Debug: Print controller values
+                if (kDebugMode) {
+                  print("Maintenance Cost: ${maintenanceCostController.text}");
+                  print(
+                      "Machine Purchase Price: ${machinePurchasePriceController.text}");
+                }
+
+                // Parse values
+                double? maintenanceCost = double.tryParse(
+                    maintenanceCostController.text.replaceAll(',', ''));
+                double? machinePurchasePrice = double.tryParse(
+                    machinePurchasePriceController.text.replaceAll(',', ''));
+
+                // Debug: Print parsed values
+                if (kDebugMode) {
+                  print("Parsed Maintenance Cost: $maintenanceCost");
+                  print("Parsed Machine Purchase Price: $machinePurchasePrice");
+                }
+
+                // Debug: Print updatedData map
+                if (kDebugMode) {
+                  print("Updated Data: $updatedData");
+                }
               },
               child: const Text(
                 "Update",
