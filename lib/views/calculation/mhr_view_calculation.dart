@@ -271,6 +271,7 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
         build: (pdfLib.Context context) => pdfLib.Center(
           child: pdfLib.Column(
             mainAxisAlignment: pdfLib.MainAxisAlignment.start,
+            crossAxisAlignment: pdfLib.CrossAxisAlignment.start,
             children: [
               pdfLib.Text("Machine Hour Rate Overview",
                   style: const pdfLib.TextStyle(fontSize: 24)),
@@ -302,9 +303,6 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
               pdfLib.Text("Calculation User Input Values",
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.SizedBox(height: 10),
-
-              // Only show values if they are not null
-
               pdfLib.Text(
                   "Maintenance Cost: ${currentCalculation!.maintananceCost}",
                   style: const pdfLib.TextStyle(fontSize: 20)),

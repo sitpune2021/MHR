@@ -168,6 +168,7 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
         build: (pdfLib.Context context) => pdfLib.Center(
           child: pdfLib.Column(
             mainAxisAlignment: pdfLib.MainAxisAlignment.start,
+            crossAxisAlignment: pdfLib.CrossAxisAlignment.start,
             children: [
               pdfLib.Text("Machine Hour Rate Overview",
                   style: const pdfLib.TextStyle(fontSize: 24)),
