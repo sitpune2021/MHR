@@ -138,8 +138,6 @@ void showLoginDialog(BuildContext context) {
           bottom: 10,
         ),
         content: SizedBox(
-          height: 250,
-          width: double.infinity,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,

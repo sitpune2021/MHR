@@ -1,4 +1,4 @@
-// ignore_for_file: unrelated_type_equality_checks, deprecated_member_use
+// ignore_for_file: unrelated_type_equality_checks, deprecated_member_use, use_build_context_synchronously
 
 import 'dart:async';
 
@@ -391,7 +391,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 TextField(
                   controller: salvageValueController,
-                  decoration: const InputDecoration(labelText: "Salvage Value"),
+                  decoration: const InputDecoration(labelText: "Resale Value"),
                   keyboardType: TextInputType.number,
                 ),
                 TextField(
@@ -657,7 +657,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               ),
                                               Expanded(
                                                 child: Text(
-                                                  "${calculation.currencyId == 2 ? "inr" : calculation.currencyId == 1 ? 'inr' : ''} ${calculation.machineHourRate}",
+                                                  "${calculation.currencyId == '3' ? "€" : calculation.currencyId == '2' ? "\$" : calculation.currencyId == '1' ? '₹' : ''} ${calculation.machineHourRate}",
                                                   style: const TextStyle(
                                                       fontSize: 18,
                                                       fontWeight:

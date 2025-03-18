@@ -391,7 +391,7 @@ class _CalculationSheetState extends State<CalculationSheet> {
                             nextFocusNode: _salvageValueFocusNode,
                           ),
                           _buildTextField(
-                            'Salvage Value (S) (Rs)',
+                            'Resale Value (R) (Rs)',
                             _salvageValueController,
                             TextInputType.number,
                             _validateInput,

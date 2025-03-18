@@ -362,7 +362,7 @@ class _MHRGuestCalculatorsScreenState extends State<MHRGuestCalculatorsScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text("Salvage Value",
+                                const Text("Resale Value",
                                     style: TextStyle(fontSize: 16)),
                                 Text(
                                     ": ${currentCalculation!["salvage_value"]}",

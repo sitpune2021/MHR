@@ -215,7 +215,7 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
                   "Machine Life: ${currentCalculation!.machineLife ?? '0'}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.Text(
-                  "Salvage Value: ${currentCalculation!.salvageValue ?? '0'}",
+                  "Resale Value: ${currentCalculation!.salvageValue ?? '0'}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
               if (currentCalculation != null &&
                   currentCalculation!.mainCatId == '1') ...[
@@ -383,7 +383,7 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
                       (currentCalculation != null)
                           ? Container(
                               padding: const EdgeInsets.only(
-                                  left: 40, right: 40, top: 10, bottom: 10),
+                                  left: 30, right: 30, top: 10, bottom: 10),
                               decoration: BoxDecoration(
                                 color: Colors.lightBlueAccent,
                                 borderRadius: BorderRadius.circular(12),
@@ -391,11 +391,34 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text(
-                                      "${currentCalculation!.machineHourRate?.toString()}",
-                                      style: const TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold)),
+                                  FutureBuilder(
+                                    future: SharedPreferences.getInstance(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.done) {
+                                        SharedPreferences prefs =
+                                            snapshot.data as SharedPreferences;
+                                        String currencyName = prefs.getString(
+                                                'selectedCurrencyAmountName') ??
+                                            'N/A'; // Retrieve the currency name
+
+                                        if (kDebugMode) {
+                                          print(
+                                              "Retrieved Currency Name: $currencyName"); // Debug log
+                                        }
+
+                                        return Text(
+                                          "$currencyName ${currentCalculation!.machineHourRate?.toString()}", // Display machineHourRate and currency name
+                                          style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        );
+                                      } else {
+                                        return const CircularProgressIndicator(); // Show a loading indicator while waiting
+                                      }
+                                    },
+                                  ),
                                   const Text(
                                     "Machine Hour Rate",
                                     style: TextStyle(fontSize: 16),
@@ -405,6 +428,30 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
                                 ],
                               ),
                             )
+                          // Container(
+                          //     padding: const EdgeInsets.only(
+                          //         left: 40, right: 40, top: 10, bottom: 10),
+                          //     decoration: BoxDecoration(
+                          //       color: Colors.lightBlueAccent,
+                          //       borderRadius: BorderRadius.circular(12),
+                          //     ),
+                          //     child: Column(
+                          //       crossAxisAlignment: CrossAxisAlignment.center,
+                          //       children: [
+                          //         Text(
+                          //             "${currentCalculation!.machineHourRate?.toString()}",
+                          //             style: const TextStyle(
+                          //                 fontSize: 24,
+                          //                 fontWeight: FontWeight.bold)),
+                          //         const Text(
+                          //           "Machine Hour Rate",
+                          //           style: TextStyle(fontSize: 16),
+                          //           textAlign: TextAlign.center,
+                          //         ),
+                          //         const SizedBox(height: 10),
+                          //       ],
+                          //     ),
+                          //   )
                           : Container(),
                       const SizedBox(height: 6),
                       (currentCalculation != null)
@@ -558,7 +605,7 @@ class _MHRCalScreenState extends State<MHRCalScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text("Salvage Value",
+                                const Text("Resale Value",
                                     style: TextStyle(fontSize: 16)),
                                 Text(": ${currentCalculation!.salvageValue}",
                                     style: const TextStyle(fontSize: 16)),

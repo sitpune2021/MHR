@@ -92,6 +92,8 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
       storedValues = {
         "main_cat_id": prefs.getString("main_cat_id"),
         "currency_id": prefs.getString("currency_id"),
+        "currency_amount":
+            prefs.getString("selectedCurrencyName"), // currency name
         "power_consumption": prefs.getString("power_consumption"),
         "maintanance_cost": prefs.getString("maintanance_cost"),
         "machine_purchase_price": prefs.getString("machine_purchase_price"),
@@ -179,7 +181,7 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.Text("Machine Life: ${storedValues['machine_life']}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Salvage Value: ${storedValues['salvage_value']}",
+              pdfLib.Text("Resale Value: ${storedValues['salvage_value']}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
               // condtion
               if (storedValues['main_cat_id'] == '1') ...[
@@ -359,7 +361,7 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text("${result!.mhr?.toString()}",
+                                Text(" ${result!.mhr?.toString()} ",
                                     style: const TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold)),
@@ -531,7 +533,7 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text("Salvage Value",
+                                    const Text("Resale Value",
                                         style: TextStyle(fontSize: 16)),
                                     Text(": ${storedValues['salvage_value']}",
                                         style: const TextStyle(fontSize: 16)),
@@ -830,12 +832,22 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
           backgroundColor: Colors.white,
           title: const Text("Limit Exceeded"),
           content: const Text(
-              "You can only save up to 10 calculations as a guest user."),
+              "You can only save up to 10 calculations as a guest user. Please log in or register to save more calculations."),
           actions: <Widget>[
             TextButton(
               child: const Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text("Log In / Register"),
+              onPressed: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
+                Navigator.of(context).pop();
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (context) => const LoginScreen()));
               },
             ),
           ],
@@ -922,7 +934,7 @@ class SaveCalculation {
     debugPrint("Maintenance Cost: $maintenanceCost");
     debugPrint("Machine Purchase Price: $machinePurchasePrice");
     debugPrint("Machine Life: $machineLife");
-    debugPrint("Salvage Value: $salvageValue");
+    debugPrint("Resale Value: $salvageValue");
     debugPrint("Operator Wage: $operatorWage");
     debugPrint("Consumable Cost: $consumableCost");
     debugPrint("Factory Rent: $factoryRent");
