@@ -32,6 +32,7 @@ class CalculationListModel {
   String? totalWorkingHours;
   String? fuelCostPerHour;
   String? machineHourRate;
+  String? currencyName; // add
 
   CalculationListModel({
     required this.id,
@@ -58,6 +59,7 @@ class CalculationListModel {
     required this.totalWorkingHours,
     required this.fuelCostPerHour,
     required this.machineHourRate,
+    required this.currencyName,
   });
 
   factory CalculationListModel.fromJson(Map<String, dynamic> json) =>
@@ -86,6 +88,7 @@ class CalculationListModel {
         totalWorkingHours: json["total_working_hours"],
         fuelCostPerHour: json["fuel_cost_per_hour"],
         machineHourRate: json["machine_hour_rate"],
+        currencyName: json["currency_name"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -113,5 +116,6 @@ class CalculationListModel {
         "total_working_hours": totalWorkingHours,
         "fuel_cost_per_hour": fuelCostPerHour,
         "machine_hour_rate": machineHourRate,
+        "currency_name": currencyName,
       };
 }

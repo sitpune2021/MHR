@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:machine_hour_rate/core/db/database_helper.dart';
 import 'package:machine_hour_rate/core/theme/colors.dart';
 import 'package:machine_hour_rate/models/calculationModel.dart';
@@ -119,6 +120,165 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
   }
 
 //down load
+  // Future<void> _downloadPDF(BuildContext context, dynamic result) async {
+  //   if (result.mhr == null || result.mhr!.isEmpty) {
+  //     _showMessage(context, "Machine Hour Rate is empty!");
+  //     return;
+  //   }
+
+  //   if (!await _requestStoragePermission()) {
+  //     return; // Permission denied
+  //   }
+
+  //   // Get external storage directory (Scoped Storage)
+  //   Directory? directory = await getExternalStorageDirectory();
+  //   if (directory == null) {
+  //     _showMessage(context, "Unable to find storage directory!");
+  //     return;
+  //   }
+
+  //   // Use Downloads directory instead
+  //   String documentsPath =
+  //       "/storage/emulated/0/Download"; // Standard Downloads folder
+  //   String filePath = "$documentsPath/machine_hour_rate.pdf";
+
+  //   final pdf = pdfLib.Document();
+  //   pdf.addPage(
+  //     pdfLib.Page(
+  //       pageFormat: PdfPageFormat.a4,
+  //       build: (pdfLib.Context context) => pdfLib.Center(
+  //         child: pdfLib.Column(
+  //           mainAxisAlignment: pdfLib.MainAxisAlignment.start,
+  //           crossAxisAlignment: pdfLib.CrossAxisAlignment.start,
+  //           children: [
+  //             pdfLib.Text("Machine Hour Rate Overview",
+  //                 style: const pdfLib.TextStyle(fontSize: 24)),
+  //             pdfLib.SizedBox(height: 20),
+  //             pdfLib.Text("Calcultaion Result",
+  //                 style: const pdfLib.TextStyle(fontSize: 24)),
+  //             pdfLib.SizedBox(height: 20),
+  //             //calculation
+  //             pdfLib.Text("Currency: ${result.currencyName}",
+  //                 style: const pdfLib.TextStyle(
+  //                   fontSize: 20,
+  //                 )),
+  //             pdfLib.Text("Machine Hour Rate: ${result.mhr}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Depreciation: ${result.depreciation}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Power Cost: ${result.powerCost}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Operator Wages: ${result.operatorWages}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Total Cost Per Year: ${result.totalCostPerYear}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Total Working Hours: ${result.totalWorkingHours}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Input Values",
+  //                 style: const pdfLib.TextStyle(fontSize: 24)),
+  //             pdfLib.SizedBox(height: 20),
+  //             // inpute
+  //             pdfLib.Text(
+  //                 "Maintenance Cost: ${storedValues['maintanance_cost']}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Machine Purchase Price: ${storedValues['machine_purchase_price']}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Machine Life: ${storedValues['machine_life']}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Resale Value: ${storedValues['salvage_value']}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             // condtion
+  //             if (storedValues['main_cat_id'] == '1') ...[
+  //               pdfLib.Text(
+  //                   "Power Consumption: ${storedValues['power_consumption'] ?? '0'}",
+  //                   style: const pdfLib.TextStyle(fontSize: 20)),
+  //               // condtion
+  //               pdfLib.Text("Power Cost: ${storedValues['power_cost'] ?? '0'}",
+  //                   style: const pdfLib.TextStyle(fontSize: 20)),
+  //             ],
+  //             // condition
+  //             if (storedValues['main_cat_id'] == '2') ...[
+  //               pdfLib.Text(
+  //                   "Fuel Cost: ${storedValues['fuel_cost_per_hour'] ?? '0'}",
+  //                   style: const pdfLib.TextStyle(fontSize: 20)),
+  //             ],
+  //             pdfLib.Text("Operator Wage: ${storedValues['operator_wage']}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Consumable Cost: ${storedValues['consumable_cost']}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Factory Rent: ${storedValues['factory_rent']}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Operating Hours: ${storedValues['operating_hours']}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Working Days: ${storedValues['working_days']}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.SizedBox(height: 10),
+  //             pdfLib.Text("Generated on: ${DateTime.now()}"),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+
+  //   await _savePDF(
+  //     context,
+  //     pdf,
+  //   );
+  // }
+
+  // Future<void> _savePDF(BuildContext context, pdfLib.Document pdf) async {
+  //   try {
+  //     if (!await _requestStoragePermission()) {
+  //       _showMessage(context, "Storage permission denied!");
+  //       return;
+  //     }
+
+  //     // Define the path to the public Downloads folder
+  //     String downloadsPath =
+  //         "/storage/emulated/0/Download"; // Public Downloads folder
+  //     Directory downloadsDir = Directory(downloadsPath);
+
+  //     // Create the Downloads directory if it doesn't exist
+  //     if (!downloadsDir.existsSync()) {
+  //       downloadsDir.createSync(recursive: true);
+  //     }
+
+  //     // Define the file path
+  //     String filePath = "${downloadsDir.path}/machine_hour_rate.pdf";
+  //     final file = File(filePath);
+
+  //     // Save the PDF
+  //     await file.writeAsBytes(await pdf.save());
+
+  //     // Show a success message
+  //     _showMessage(context, "PDF saved at $filePath");
+  //     if (kDebugMode) {
+  //       print("PDF saved at $filePath");
+  //     }
+
+  //     // Open the file after saving
+  //     OpenFilex.open(filePath);
+  //   } catch (e) {
+  //     _showMessage(context, "Failed to save PDF: $e");
+  //     if (kDebugMode) {
+  //       print("Download failed: $e");
+  //     }
+  //   }
+  // }
+
+  //==================================================================================================
+  Future<pdfLib.Font> _loadFont() async {
+    try {
+      final fontData =
+          await rootBundle.load("assets/fonts/NotoSans-Regular.ttf");
+      return pdfLib.Font.ttf(fontData);
+    } catch (e) {
+      print("Font loading failed: $e");
+      throw Exception("Failed to load font");
+    }
+  }
+
   Future<void> _downloadPDF(BuildContext context, dynamic result) async {
     if (result.mhr == null || result.mhr!.isEmpty) {
       _showMessage(context, "Machine Hour Rate is empty!");
@@ -129,137 +289,167 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
       return; // Permission denied
     }
 
-    // Get external storage directory (Scoped Storage)
-    Directory? directory = await getExternalStorageDirectory();
-    if (directory == null) {
-      _showMessage(context, "Unable to find storage directory!");
-      return;
-    }
-
-    // Use Downloads directory instead
-    String documentsPath =
-        "/storage/emulated/0/Download"; // Standard Downloads folder
+    // Get the Downloads directory
+    String documentsPath = "/storage/emulated/0/Download";
     String filePath = "$documentsPath/machine_hour_rate.pdf";
 
-    final pdf = pdfLib.Document();
-    pdf.addPage(
-      pdfLib.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (pdfLib.Context context) => pdfLib.Center(
-          child: pdfLib.Column(
-            mainAxisAlignment: pdfLib.MainAxisAlignment.start,
-            crossAxisAlignment: pdfLib.CrossAxisAlignment.start,
-            children: [
-              pdfLib.Text("Machine Hour Rate Overview",
-                  style: const pdfLib.TextStyle(fontSize: 24)),
-              pdfLib.SizedBox(height: 20),
-              pdfLib.Text("Calcultaion Result",
-                  style: const pdfLib.TextStyle(fontSize: 24)),
-              pdfLib.SizedBox(height: 20),
-              //calculation
-              pdfLib.Text("Machine Hour Rate: ${result.mhr}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Depreciation: ${result.depreciation}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Power Cost: ${result.powerCost}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Operator Wages: ${result.operatorWages}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Total Cost Per Year: ${result.totalCostPerYear}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Total Working Hours: ${result.totalWorkingHours}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Input Values",
-                  style: const pdfLib.TextStyle(fontSize: 24)),
-              pdfLib.SizedBox(height: 20),
-              // inpute
-              pdfLib.Text(
-                  "Maintenance Cost: ${storedValues['maintanance_cost']}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text(
-                  "Machine Purchase Price: ${storedValues['machine_purchase_price']}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Machine Life: ${storedValues['machine_life']}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Resale Value: ${storedValues['salvage_value']}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              // condtion
-              if (storedValues['main_cat_id'] == '1') ...[
+    try {
+      // Load custom font
+      final fontData =
+          await rootBundle.load("assets/fonts/NotoSans-Regular.ttf");
+      final ttf = await _loadFont();
+
+      // Create PDF document
+      final pdf = pdfLib.Document();
+      pdf.addPage(
+        pdfLib.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pdfLib.Context context) => pdfLib.Center(
+            child: pdfLib.Column(
+              crossAxisAlignment: pdfLib.CrossAxisAlignment.start,
+              children: [
+                // Title
+                pdfLib.Text("Machine Hour Rate Overview",
+                    style: pdfLib.TextStyle(
+                        font: ttf,
+                        fontSize: 24,
+                        fontWeight: pdfLib.FontWeight.bold)),
+                pdfLib.SizedBox(height: 20),
+
+                // Output Section
+                pdfLib.Text("Calculation Result",
+                    style: pdfLib.TextStyle(
+                        font: ttf,
+                        fontSize: 22,
+                        fontWeight: pdfLib.FontWeight.bold)),
+                pdfLib.SizedBox(height: 10),
                 pdfLib.Text(
-                    "Power Consumption: ${storedValues['power_consumption'] ?? '0'}",
-                    style: const pdfLib.TextStyle(fontSize: 20)),
-                // condtion
-                pdfLib.Text("Power Cost: ${storedValues['power_cost'] ?? '0'}",
-                    style: const pdfLib.TextStyle(fontSize: 20)),
-              ],
-              // condition
-              if (storedValues['main_cat_id'] == '2') ...[
+                    "Currency: ${getCurrencySymbol(result.currencyName)}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text("Machine Hour Rate: ${result.mhr}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text("Depreciation: ${result.depreciation}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text("Power Cost: ${result.powerCost}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text("Operator Wages: ${result.operatorWages}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text("Total Cost Per Year: ${result.totalCostPerYear}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text("Total Working Hours: ${result.totalWorkingHours}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.SizedBox(height: 20),
+
+                //------------- Input Section-----------------------------
+                pdfLib.Text("Input Values",
+                    style: pdfLib.TextStyle(
+                        font: ttf,
+                        fontSize: 22,
+                        fontWeight: pdfLib.FontWeight.bold)),
+                pdfLib.SizedBox(height: 10),
                 pdfLib.Text(
-                    "Fuel Cost: ${storedValues['fuel_cost_per_hour'] ?? '0'}",
-                    style: const pdfLib.TextStyle(fontSize: 20)),
+                    "Maintenance Cost: ${storedValues['maintanance_cost'] ?? 'N/A'}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text(
+                    "Machine Purchase Price: ${storedValues['machine_purchase_price'] ?? 'N/A'}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text(
+                    "Machine Life: ${storedValues['machine_life'] ?? 'N/A'}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text(
+                    "Resale Value: ${storedValues['salvage_value'] ?? 'N/A'}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+
+                // Conditions for Power or Fuel Costs
+                if (storedValues['main_cat_id'] == '1') ...[
+                  pdfLib.Text(
+                      "Power Consumption: ${storedValues['power_consumption'] ?? '0'}",
+                      style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                  pdfLib.Text(
+                      "Power Cost: ${storedValues['power_cost'] ?? '0'}",
+                      style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                ],
+                if (storedValues['main_cat_id'] == '2') ...[
+                  pdfLib.Text(
+                      "Fuel Cost: ${storedValues['fuel_cost_per_hour'] ?? '0'}",
+                      style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                ],
+
+                pdfLib.Text(
+                    "Operator Wage: ${storedValues['operator_wage'] ?? 'N/A'}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text(
+                    "Consumable Cost: ${storedValues['consumable_cost'] ?? 'N/A'}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text(
+                    "Factory Rent: ${storedValues['factory_rent'] ?? 'N/A'}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text(
+                    "Operating Hours: ${storedValues['operating_hours'] ?? 'N/A'}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+                pdfLib.Text(
+                    "Working Days: ${storedValues['working_days'] ?? 'N/A'}",
+                    style: pdfLib.TextStyle(font: ttf, fontSize: 18)),
+
+                pdfLib.SizedBox(height: 20),
+                pdfLib.Text("Generated on: ${DateTime.now()}",
+                    style: pdfLib.TextStyle(
+                        font: ttf,
+                        fontSize: 16,
+                        fontStyle: pdfLib.FontStyle.italic)),
               ],
-              pdfLib.Text("Operator Wage: ${storedValues['operator_wage']}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Consumable Cost: ${storedValues['consumable_cost']}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Factory Rent: ${storedValues['factory_rent']}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Operating Hours: ${storedValues['operating_hours']}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.Text("Working Days: ${storedValues['working_days']}",
-                  style: const pdfLib.TextStyle(fontSize: 20)),
-              pdfLib.SizedBox(height: 10),
-              pdfLib.Text("Generated on: ${DateTime.now()}"),
-            ],
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    await _savePDF(
-      context,
-      pdf,
-    );
+      await _savePDF(context, pdf, filePath);
+    } catch (e) {
+      _showMessage(context, "Failed to generate PDF!");
+      if (kDebugMode) print("Error generating PDF: $e");
+    }
   }
 
-  Future<void> _savePDF(BuildContext context, pdfLib.Document pdf) async {
+  Future<void> _savePDF(
+      BuildContext context, pdfLib.Document pdf, String filePath) async {
     try {
-      if (!await _requestStoragePermission()) {
-        _showMessage(context, "Storage permission denied!");
-        return;
-      }
-
-      // Define the path to the public Downloads folder
-      String downloadsPath =
-          "/storage/emulated/0/Download"; // Public Downloads folder
-      Directory downloadsDir = Directory(downloadsPath);
-
-      // Create the Downloads directory if it doesn't exist
+      // Ensure Downloads directory exists
+      Directory downloadsDir = Directory("/storage/emulated/0/Download");
       if (!downloadsDir.existsSync()) {
         downloadsDir.createSync(recursive: true);
       }
 
-      // Define the file path
-      String filePath = "${downloadsDir.path}/machine_hour_rate.pdf";
+      // Save PDF file
       final file = File(filePath);
-
-      // Save the PDF
       await file.writeAsBytes(await pdf.save());
 
-      // Show a success message
+      // Show success message and open file
       _showMessage(context, "PDF saved at $filePath");
-      if (kDebugMode) {
-        print("PDF saved at $filePath");
-      }
-
-      // Open the file after saving
+      if (kDebugMode) print("PDF saved at $filePath");
       OpenFilex.open(filePath);
     } catch (e) {
       _showMessage(context, "Failed to save PDF: $e");
-      if (kDebugMode) {
-        print("Download failed: $e");
-      }
+      if (kDebugMode) print("Download failed: $e");
     }
+  }
+
+// Function to get Unicode currency symbols
+  String getCurrencySymbol(String currencyName) {
+    const symbols = {
+      "USD": "\u0024", // Dollar ($)
+      "EUR": "\u20AC", // Euro (€)
+      "GBP": "\u00A3", // British Pound (£)
+      "INR": "\u20B9", // Indian Rupee (₹)
+      "JPY": "\u00A5", // Japanese Yen (¥)
+      "CNY": "\u00A5", // Chinese Yuan (¥)
+    };
+    return symbols[currencyName] ?? currencyName;
+  }
+
+// Function to show messages
+  void _showMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<bool> _requestStoragePermission() async {
@@ -294,10 +484,10 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
     return true; // Non-Android platforms don't need this
   }
 
-  void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
+  // void _showMessage(BuildContext context, String message) {
+  //   ScaffoldMessenger.of(context)
+  //       .showSnackBar(SnackBar(content: Text(message)));
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -361,7 +551,9 @@ class _MHRCalculatorScreenState extends State<MHRCalculatorScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(" ${result!.mhr?.toString()} ",
+                                Text(
+                                    " ${result!.currencyName?.toString()}"
+                                    "${result.mhr?.toString()} ",
                                     style: const TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold)),

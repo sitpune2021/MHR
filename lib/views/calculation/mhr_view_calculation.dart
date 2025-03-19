@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:machine_hour_rate/core/theme/colors.dart';
 import 'package:machine_hour_rate/models/calculationlistModel.dart';
 import 'package:machine_hour_rate/models/mainmachineModel.dart';
@@ -138,6 +139,169 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
     }
   }
 
+  // Future<void> _downloadPDF(BuildContext context, dynamic result) async {
+  //   if (currentCalculation!.machineHourRate == null ||
+  //       currentCalculation!.machineHourRate!.isEmpty) {
+  //     _showMessage(context, "Machine Hour Rate is empty!");
+  //     return;
+  //   }
+
+  //   if (!await _requestStoragePermission()) {
+  //     return; // Permission denied
+  //   }
+
+  //   // Get external storage directory (Scoped Storage)
+  //   Directory? directory = await getExternalStorageDirectory();
+  //   if (directory == null) {
+  //     _showMessage(context, "Unable to find storage directory!");
+  //     return;
+  //   }
+
+  //   // Use Downloads directory instead
+  //   String documentsPath =
+  //       "/storage/emulated/0/Download"; // Standard Downloads folder
+  //   String filePath = "$documentsPath/machine_hour_rate.pdf";
+
+  //   final pdf = pdfLib.Document();
+  //   pdf.addPage(
+  //     pdfLib.Page(
+  //       pageFormat: PdfPageFormat.a4,
+  //       build: (pdfLib.Context context) => pdfLib.Center(
+  //         child: pdfLib.Column(
+  //           mainAxisAlignment: pdfLib.MainAxisAlignment.start,
+  //           crossAxisAlignment: pdfLib.CrossAxisAlignment.start,
+  //           children: [
+  //             pdfLib.Text("Machine Hour Rate Overview",
+  //                 style: const pdfLib.TextStyle(fontSize: 24)),
+  //             pdfLib.SizedBox(height: 20),
+  //             pdfLib.Text("Calculation Result",
+  //                 style: const pdfLib.TextStyle(fontSize: 24)),
+  //             pdfLib.SizedBox(height: 10),
+
+  //             // Calculation fields (only show if not null)
+  //             pdfLib.Text(
+  //                 "Machine Hour Rate: ${currentCalculation!.machineHourRate}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Depreciation: ${currentCalculation!.depreciation}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Power Cost: ${currentCalculation!.powerCost}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Operator Wages: ${currentCalculation!.operatorWages}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Total Cost Per Year: ${currentCalculation!.totalCostPerYear}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Total Working Hours: ${currentCalculation!.totalWorkingHours}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.SizedBox(height: 20),
+
+  //             // Input values section
+  //             pdfLib.Text("Calculation User Input Values",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.SizedBox(height: 10),
+  //             pdfLib.Text(
+  //                 "Maintenance Cost: ${currentCalculation!.maintananceCost}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Machine Purchase Price: ${currentCalculation!.machinePurchasePrice}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Machine Life: ${currentCalculation!.machineLife}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+
+  //             pdfLib.Text("Resale Value: ${currentCalculation!.salvageValue}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             if (currentCalculation != null &&
+  //                 currentCalculation!.mainCatId == '1') ...[
+  //               pdfLib.Text(
+  //                   "Power Consumption: ${currentCalculation!.powerConsumption}",
+  //                   style: const pdfLib.TextStyle(fontSize: 20)),
+  //               pdfLib.Text(
+  //                   "Power Cost: ${currentCalculation!.powerCostPerUnit}",
+  //                   style: const pdfLib.TextStyle(fontSize: 20)),
+  //             ],
+  //             if (currentCalculation!.mainCatId == '2') ...[
+  //               pdfLib.Text("Fuel Cost: ${currentCalculation!.fuelCostPerHour}",
+  //                   style: const pdfLib.TextStyle(fontSize: 20)),
+  //             ],
+  //             pdfLib.Text("Operator Wage: ${currentCalculation!.operatorWage}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Consumable Cost: ${currentCalculation!.consumableCost}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Factory Rent: ${currentCalculation!.factoryRent}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text(
+  //                 "Operating Hours: ${currentCalculation!.operatingHours}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.Text("Working Days: ${currentCalculation!.workingDays}",
+  //                 style: const pdfLib.TextStyle(fontSize: 20)),
+  //             pdfLib.SizedBox(height: 10),
+  //             pdfLib.Text("Generated on: ${DateTime.now()}"),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+
+  //   await _savePDF(
+  //     context,
+  //     pdf,
+  //   );
+  // }
+
+  // Future<void> _savePDF(BuildContext context, pdfLib.Document pdf) async {
+  //   try {
+  //     if (!await _requestStoragePermission()) {
+  //       _showMessage(context, "Storage permission denied!");
+  //       return;
+  //     }
+
+  //     // Define the path to the public Downloads folder
+  //     String downloadsPath =
+  //         "/storage/emulated/0/Download"; // Public Downloads folder
+  //     Directory downloadsDir = Directory(downloadsPath);
+
+  //     // Create the Downloads directory if it doesn't exist
+  //     if (!downloadsDir.existsSync()) {
+  //       downloadsDir.createSync(recursive: true);
+  //     }
+
+  //     // Define the file path
+  //     String filePath = "${downloadsDir.path}/machine_hour_rate.pdf";
+  //     final file = File(filePath);
+
+  //     // Save the PDF
+  //     await file.writeAsBytes(await pdf.save());
+
+  //     // Show a success message
+  //     _showMessage(context, "PDF saved at $filePath");
+  //     if (kDebugMode) {
+  //       print("PDF saved at $filePath");
+  //     }
+
+  //     // Open the file after saving
+  //     OpenFilex.open(filePath);
+  //   } catch (e) {
+  //     _showMessage(context, "Failed to save PDF: $e");
+  //     if (kDebugMode) {
+  //       print("Download failed: $e");
+  //     }
+  //   }
+  // }
+//===========================================================================================
+  Future<pdfLib.Font> _loadFont() async {
+    try {
+      final fontData =
+          await rootBundle.load("assets/fonts/NotoSans-Regular.ttf");
+      return pdfLib.Font.ttf(fontData);
+    } catch (e) {
+      print("Font loading failed: $e");
+      throw Exception("Failed to load font");
+    }
+  }
+
   Future<void> _downloadPDF(BuildContext context, dynamic result) async {
     if (currentCalculation!.machineHourRate == null ||
         currentCalculation!.machineHourRate!.isEmpty) {
@@ -149,16 +313,13 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
       return; // Permission denied
     }
 
-    // Get external storage directory (Scoped Storage)
     Directory? directory = await getExternalStorageDirectory();
     if (directory == null) {
       _showMessage(context, "Unable to find storage directory!");
       return;
     }
 
-    // Use Downloads directory instead
-    String documentsPath =
-        "/storage/emulated/0/Download"; // Standard Downloads folder
+    String documentsPath = "/storage/emulated/0/Download";
     String filePath = "$documentsPath/machine_hour_rate.pdf";
 
     final pdf = pdfLib.Document();
@@ -176,8 +337,8 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
               pdfLib.Text("Calculation Result",
                   style: const pdfLib.TextStyle(fontSize: 24)),
               pdfLib.SizedBox(height: 10),
-
-              // Calculation fields (only show if not null)
+              pdfLib.Text("Currency:${currentCalculation!.currencyName ?? "0"}",
+                  style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.Text(
                   "Machine Hour Rate: ${currentCalculation!.machineHourRate}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
@@ -195,8 +356,6 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                   "Total Working Hours: ${currentCalculation!.totalWorkingHours}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.SizedBox(height: 20),
-
-              // Input values section
               pdfLib.Text("Calculation User Input Values",
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.SizedBox(height: 10),
@@ -208,7 +367,6 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.Text("Machine Life: ${currentCalculation!.machineLife}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
-
               pdfLib.Text("Resale Value: ${currentCalculation!.salvageValue}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
               if (currentCalculation != null &&
@@ -236,6 +394,10 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
                   style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.Text("Working Days: ${currentCalculation!.workingDays}",
                   style: const pdfLib.TextStyle(fontSize: 20)),
+              // pdfLib.Text("Idle Hours: ${currentCalculation!.idleHours}", style: const pdfLib.TextStyle(fontSize: 20)),
+              // pdfLib.Text("Production Hours: ${currentCalculation!.productionHours}", style: const pdfLib.TextStyle(fontSize: 20)),
+              // pdfLib.Text("Repair and Maintenance Cost: ${currentCalculation!.repairAndMaintenanceCost}", style: const pdfLib.TextStyle(fontSize: 20)),
+              // pdfLib.Text("Insurance Cost: ${currentCalculation!.insuranceCost}", style: const pdfLib.TextStyle(fontSize: 20)),
               pdfLib.SizedBox(height: 10),
               pdfLib.Text("Generated on: ${DateTime.now()}"),
             ],
@@ -244,49 +406,29 @@ class _MHRCalculatorsScreenState extends State<MHRCalculatorsScreen> {
       ),
     );
 
-    await _savePDF(
-      context,
-      pdf,
-    );
+    await _savePDF(context, pdf, filePath);
   }
 
-  Future<void> _savePDF(BuildContext context, pdfLib.Document pdf) async {
+  Future<void> _savePDF(
+      BuildContext context, pdfLib.Document pdf, String filePath) async {
     try {
       if (!await _requestStoragePermission()) {
         _showMessage(context, "Storage permission denied!");
         return;
       }
 
-      // Define the path to the public Downloads folder
-      String downloadsPath =
-          "/storage/emulated/0/Download"; // Public Downloads folder
-      Directory downloadsDir = Directory(downloadsPath);
-
-      // Create the Downloads directory if it doesn't exist
+      Directory downloadsDir = Directory("/storage/emulated/0/Download");
       if (!downloadsDir.existsSync()) {
         downloadsDir.createSync(recursive: true);
       }
 
-      // Define the file path
-      String filePath = "${downloadsDir.path}/machine_hour_rate.pdf";
       final file = File(filePath);
-
-      // Save the PDF
       await file.writeAsBytes(await pdf.save());
 
-      // Show a success message
       _showMessage(context, "PDF saved at $filePath");
-      if (kDebugMode) {
-        print("PDF saved at $filePath");
-      }
-
-      // Open the file after saving
       OpenFilex.open(filePath);
     } catch (e) {
       _showMessage(context, "Failed to save PDF: $e");
-      if (kDebugMode) {
-        print("Download failed: $e");
-      }
     }
   }
 

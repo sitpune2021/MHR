@@ -14,6 +14,7 @@ class CalculationModel {
   String? totalCostPerYear;
   String? totalWorkingHours;
   String? mhr;
+  String? currencyName;
 
   CalculationModel({
     required this.depreciation,
@@ -22,6 +23,7 @@ class CalculationModel {
     required this.totalCostPerYear,
     required this.totalWorkingHours,
     required this.mhr,
+    required this.currencyName,
   });
 
   factory CalculationModel.fromJson(Map<String, dynamic> json) =>
@@ -32,6 +34,7 @@ class CalculationModel {
         totalCostPerYear: json["Total Cost Per Year"],
         totalWorkingHours: json["Total Working Hours"],
         mhr: json["MHR"],
+        currencyName: json["Currency Name"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -41,5 +44,6 @@ class CalculationModel {
         "Total Cost Per Year": totalCostPerYear,
         "Total Working Hours": totalWorkingHours,
         "MHR": mhr,
+        "Currency Name": currencyName,
       };
 }

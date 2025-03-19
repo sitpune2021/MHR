@@ -60,6 +60,7 @@ class SharedPrefsHelper {
     await prefs.setString(
         "total_working_hours", calculation.totalWorkingHours ?? "");
     await prefs.setString("mhr", calculation.mhr ?? "");
+    await prefs.setString("currencyName", calculation.currencyName ?? "");
   }
 
   static Future<CalculationModel?> getCalculationResult() async {
@@ -71,6 +72,7 @@ class SharedPrefsHelper {
       totalCostPerYear: prefs.getString("total_cost_per_year"),
       totalWorkingHours: prefs.getString("total_working_hours"),
       mhr: prefs.getString("mhr"),
+      currencyName: prefs.getString("currencyName"),
     );
   }
 }
